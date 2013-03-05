@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/arrow_redo.png</file>
+        <file>icons/arrow_undo.png</file>
+        <file>icons/cut.png</file>
+        <file>icons/disk.png</file>
+        <file>icons/folder.png</file>
+        <file>icons/page_copy.png</file>
+        <file>icons/page_white.png</file>
+        <file>icons/paste_plain.png</file>
+        <file>icons/play_blue.png</file>
+        <file>icons/rewind_blue.png</file>
+        <file>icons/stop_blue.png</file>
+        <file>icons/information.png</file>
+        <file>icons/resultset_last.png</file>
+        <file>icons/arrow_refresh.png</file>
+        <file>icons/application-lightning.png</file>
+    </qresource>
+</RCC>

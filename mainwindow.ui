@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>731</width>
+    <height>445</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>AsmEmu [*]</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="res.qrc">
+    <normaloff>:/icons/application-lightning.png</normaloff>:/icons/application-lightning.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="handleWidth">
+       <number>1</number>
+      </property>
+      <widget class="CodeEdit" name="codeEdit">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="lineWrapMode">
+        <enum>QPlainTextEdit::NoWrap</enum>
+       </property>
+       <property name="plainText">
+        <string/>
+       </property>
+       <property name="specialPixmap" stdset="0">
+        <pixmap resource="res.qrc">:/icons/play_blue.png</pixmap>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="asmHelpEdit">
+       <property name="lineWrapMode">
+        <enum>QTextEdit::NoWrap</enum>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot; bgcolor=&quot;#fafafa&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:16pt; font-weight:600;&quot;&gt;Asm Help&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:16pt; font-weight:600;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;HLT&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Halt&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;CPA&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Copy to Accumulator	&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#0000ff;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; -&amp;gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;STO&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Store		&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; -&amp;gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#0000ff;&quot;&gt;M&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;ADD&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Addition		&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#0000ff;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; + &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; -&amp;gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;SUB&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Subtraction		&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; - &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#5500ff;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; -&amp;gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;BRA&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Branch Always&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;BRN&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Branch when Negative	&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; &amp;lt; 0&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;MUL&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Multiplication		&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; * &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#5500ff;&quot;&gt;M&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt; -&amp;gt; &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;BRZ&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;	Branch when Zero 	&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#55aa00;&quot;&gt;A&lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; = 0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>731</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="newAction"/>
+    <addaction name="openAction"/>
+    <addaction name="saveAction"/>
+    <addaction name="saveAsAction"/>
+    <addaction name="separator"/>
+    <addaction name="exitAction"/>
+   </widget>
+   <widget class="QMenu" name="editMenu">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="undoAction"/>
+    <addaction name="redoAction"/>
+    <addaction name="separator"/>
+    <addaction name="cutAction"/>
+    <addaction name="copyAction"/>
+    <addaction name="pasteAction"/>
+    <addaction name="separator"/>
+    <addaction name="changeLanguageAction"/>
+   </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="asmHelpAction"/>
+    <addaction name="aboutAction"/>
+   </widget>
+   <widget class="QMenu" name="menuMachine">
+    <property name="title">
+     <string>&amp;Machine</string>
+    </property>
+    <addaction name="startAction"/>
+    <addaction name="singleStepAction"/>
+    <addaction name="stopAction"/>
+    <addaction name="rewindAction"/>
+    <addaction name="separator"/>
+    <addaction name="memorySizeAction"/>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="editMenu"/>
+   <addaction name="menuMachine"/>
+   <addaction name="helpMenu"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="newAction"/>
+   <addaction name="openAction"/>
+   <addaction name="saveAction"/>
+   <addaction name="separator"/>
+   <addaction name="undoAction"/>
+   <addaction name="redoAction"/>
+   <addaction name="separator"/>
+   <addaction name="cutAction"/>
+   <addaction name="copyAction"/>
+   <addaction name="pasteAction"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="vmToolBar">
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="startAction"/>
+   <addaction name="singleStepAction"/>
+   <addaction name="stopAction"/>
+   <addaction name="rewindAction"/>
+  </widget>
+  <widget class="QDockWidget" name="registersDock">
+   <property name="windowTitle">
+    <string>Registers</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="registersDockWidget">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QTreeWidget" name="registersTree">
+       <property name="indentation">
+        <number>0</number>
+       </property>
+       <column>
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Value</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="memoryDock">
+   <property name="windowTitle">
+    <string>Memory</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="memoryDockWidget">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="MemoryView" name="memoryView">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="lineWrapMode">
+        <enum>QPlainTextEdit::NoWrap</enum>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="plainText">
+        <string/>
+       </property>
+       <property name="zeroPadding" stdset="0">
+        <number>5</number>
+       </property>
+       <property name="lineStep" stdset="0">
+        <number>10</number>
+       </property>
+       <property name="zeroStart" stdset="0">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="newAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/page_white.png</normaloff>:/icons/page_white.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="openAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/folder.png</normaloff>:/icons/folder.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="exitAction">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="saveAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/disk.png</normaloff>:/icons/disk.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="saveAsAction">
+   <property name="text">
+    <string>S&amp;ave as...</string>
+   </property>
+  </action>
+  <action name="redoAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/arrow_redo.png</normaloff>:/icons/arrow_redo.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="undoAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/arrow_undo.png</normaloff>:/icons/arrow_undo.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="cutAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/cut.png</normaloff>:/icons/cut.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cu&amp;t</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="copyAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/page_copy.png</normaloff>:/icons/page_copy.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="pasteAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/paste_plain.png</normaloff>:/icons/paste_plain.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="aboutAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/information.png</normaloff>:/icons/information.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="startAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/play_blue.png</normaloff>:/icons/play_blue.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Start</string>
+   </property>
+   <property name="toolTip">
+    <string>Start</string>
+   </property>
+   <property name="shortcut">
+    <string>F9</string>
+   </property>
+  </action>
+  <action name="rewindAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/rewind_blue.png</normaloff>:/icons/rewind_blue.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Rewind</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
+   </property>
+  </action>
+  <action name="singleStepAction">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/resultset_last.png</normaloff>:/icons/resultset_last.png</iconset>
+   </property>
+   <property name="text">
+    <string>S&amp;ingle step</string>
+   </property>
+   <property name="shortcut">
+    <string>F10</string>
+   </property>
+  </action>
+  <action name="stopAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/icons/stop_blue.png</normaloff>:/icons/stop_blue.png</iconset>
+   </property>
+   <property name="text">
+    <string>S&amp;top</string>
+   </property>
+   <property name="shortcut">
+    <string>F12</string>
+   </property>
+  </action>
+  <action name="memorySizeAction">
+   <property name="text">
+    <string>&amp;Memory size...</string>
+   </property>
+  </action>
+  <action name="changeLanguageAction">
+   <property name="text">
+    <string>Change &amp;language...</string>
+   </property>
+  </action>
+  <action name="asmHelpAction">
+   <property name="text">
+    <string>A&amp;sm Help</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>CodeEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>codeedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MemoryView</class>
+   <extends>QPlainTextEdit</extends>
+   <header>memoryview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>newAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>newFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>openAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>open()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>save()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>saveAsAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>saveAs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>aboutAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>about()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>exitAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>copyAction</sender>
+   <signal>triggered()</signal>
+   <receiver>codeEdit</receiver>
+   <slot>copy()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>498</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cutAction</sender>
+   <signal>triggered()</signal>
+   <receiver>codeEdit</receiver>
+   <slot>cut()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>498</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pasteAction</sender>
+   <signal>triggered()</signal>
+   <receiver>codeEdit</receiver>
+   <slot>paste()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>498</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>redoAction</sender>
+   <signal>triggered()</signal>
+   <receiver>codeEdit</receiver>
+   <slot>redo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>498</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>undoAction</sender>
+   <signal>triggered()</signal>
+   <receiver>codeEdit</receiver>
+   <slot>undo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>498</x>
+     <y>238</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>startAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>startExec()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rewindAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>rewindExec()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>singleStepAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>singleExec()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>stopAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>stopExec()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>memorySizeAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>changeMemorySize()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changeLanguageAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>changeLanguage()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>370</x>
+     <y>224</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>asmHelpAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>toggleAsmHelp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>365</x>
+     <y>222</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>newFile()</slot>
+  <slot>open()</slot>
+  <slot>save()</slot>
+  <slot>saveAs()</slot>
+  <slot>about()</slot>
+  <slot>assemble()</slot>
+  <slot>startExec()</slot>
+  <slot>pauseExec()</slot>
+  <slot>stopExec()</slot>
+  <slot>rewindExec()</slot>
+  <slot>singleExec()</slot>
+  <slot>changeMemorySize()</slot>
+  <slot>changeLanguage()</slot>
+  <slot>toggleAsmHelp()</slot>
+ </slots>
+</ui>

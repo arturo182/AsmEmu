@@ -1,0 +1,9 @@
+Makefile*
+/release/*
+/debug/*
+*.qm
+*.pro.user
+object_script.*
+*.dll
+*.exe
+ui_*.h
