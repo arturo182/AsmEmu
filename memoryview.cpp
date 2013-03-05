@@ -6,6 +6,7 @@ MemoryView::MemoryView(QWidget *parent) :
 	CodeEdit(parent),
 	m_updating(false)
 {
+	setMemory(QVector<int>(100));
 }
 
 void MemoryView::setMemory(const QVector<int> &memory)
