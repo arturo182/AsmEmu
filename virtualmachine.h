@@ -16,6 +16,10 @@ class VirtualMachine : public QObject
 		};
 
 	public:
+		static int memoryToInt(const int &mem);
+		static int intToMemory(const int &val);
+
+	public:
 		explicit VirtualMachine(QObject *parent = 0);
 
 		void assemble(const QString &code);

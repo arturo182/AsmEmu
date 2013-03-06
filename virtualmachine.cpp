@@ -10,6 +10,21 @@
 
 const QMap<QString, int> mnemonicValues(std::map<QString, int>({{ "CPA", 1 }, { "STO", 2 }, { "ADD", 3 }, { "SUB", 4 }, { "BRA", 5 }, { "BRN", 6 }, { "MUL", 7 }, { "BRZ", 8 }}));
 
+int VirtualMachine::memoryToInt(const int &mem)
+{
+	const int sign = (mem / 1000);
+	const int value = mem - sign * 1000;
+
+	return (sign == 0) ? value : -value;
+}
+
+int VirtualMachine::intToMemory(const int &val)
+{
+	const int bounded = qBound(-999, val, 999);
+
+	return(bounded >= 0) ? bounded : -bounded + 1000;
+}
+
 VirtualMachine::VirtualMachine(QObject *parent) :
 	QObject(parent),
 	m_execCell(0)
@@ -107,14 +122,16 @@ bool VirtualMachine::exec()
 
 		case 3: // ADD
 		{
-			m_registers[ACU] = qBound(0, m_registers[ACU] + m_memory[value], 9999);
+			const int result = memoryToInt(m_registers[ACU]) + memoryToInt(m_memory[value]);
+			m_registers[ACU] = intToMemory(result);
 			++m_execCell;
 		}
 		break;
 
 		case 4: //SUB
 		{
-			m_registers[ACU] = qBound(0, m_registers[ACU] - m_memory[value], 9999);
+			const int result = memoryToInt(m_registers[ACU]) - memoryToInt(m_memory[value]);
+			m_registers[ACU] = intToMemory(result);
 			++m_execCell;
 		}
 		break;
@@ -127,7 +144,7 @@ bool VirtualMachine::exec()
 
 		case 6: //BRN
 		{
-			if(m_registers[ACU] < 0) {
+			if(memoryToInt(m_registers[ACU]) < 0) {
 				m_execCell = value;
 			} else {
 				++m_execCell;
@@ -137,14 +154,15 @@ bool VirtualMachine::exec()
 
 		case 7: //MUL
 		{
-			m_registers[ACU] = qBound(0, m_registers[ACU] * m_memory[value], 9999);
+			const int result = memoryToInt(m_registers[ACU]) * memoryToInt(m_memory[value]);
+			m_registers[ACU] = intToMemory(result);
 			++m_execCell;
 		}
 		break;
 
 		case 8: //BRZ
 		{
-			if(m_registers[ACU] == 0) {
+			if(memoryToInt(m_registers[ACU]) == 0) {
 				m_execCell = value;
 			} else {
 				++m_execCell;
