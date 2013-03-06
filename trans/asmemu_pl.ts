@@ -242,12 +242,12 @@ p, li { white-space: pre-wrap; }
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="25"/>
+        <location filename="../mainwindow.cpp" line="26"/>
         <source>Start cell: </source>
         <translation>Komórka początkowa:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="87"/>
+        <location filename="../mainwindow.cpp" line="88"/>
         <location filename="../mainwindow.cpp" line="105"/>
         <source>Assembler files (*.asm)</source>
         <translation>Pliki assemblera (*.asm)</translation>
@@ -257,11 +257,6 @@ p, li { white-space: pre-wrap; }
         <location filename="../mainwindow.cpp" line="380"/>
         <source>AsmEmu</source>
         <translation></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="194"/>
-        <source>Assembler Emulator&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</source>
-        <translation>Emulator Assemblera&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="293"/>
@@ -302,6 +297,11 @@ p, li { white-space: pre-wrap; }
         <location filename="../mainwindow.cpp" line="233"/>
         <source>Line %1 Col %2</source>
         <translation>Linia %1 Kol %2</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="194"/>
+        <source>Assembler Emulator v%1&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</source>
+        <translation>Emulator Assemblera v%1&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="278"/>

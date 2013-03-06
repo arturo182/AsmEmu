@@ -18,7 +18,8 @@ HEADERS  += mainwindow.h \
             asmhighlighter.h \
             codeedit.h \
             memoryview.h \
-            virtualmachine.h
+            virtualmachine.h \
+    contants.h
 
 FORMS     = mainwindow.ui
 

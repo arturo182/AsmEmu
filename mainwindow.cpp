@@ -3,6 +3,7 @@
 
 #include "asmhighlighter.h"
 #include "virtualmachine.h"
+#include "contants.h"
 
 #include <QRegularExpression>
 #include <QInputDialog>
@@ -93,11 +94,10 @@ void MainWindow::open()
 
 bool MainWindow::save()
 {
-	if(m_currentFile.isEmpty()) {
+	if(m_currentFile.isEmpty())
 		return saveAs();
-	} else {
-		return saveFile(m_currentFile);
-	}
+
+	return saveFile(m_currentFile);
 }
 
 bool MainWindow::saveAs()
@@ -191,7 +191,7 @@ void MainWindow::rewindExec()
 
 void MainWindow::about()
 {
-	QMessageBox::about(this, tr("AsmEmu"), tr("Assembler Emulator<br>Copyright &copy; 2013 Artur Pacholec"));
+	QMessageBox::about(this, tr("AsmEmu"), tr("Assembler Emulator v%1<br>Copyright &copy; 2013 Artur Pacholec").arg(Constants::Version));
 }
 
 void MainWindow::documentWasModified()
