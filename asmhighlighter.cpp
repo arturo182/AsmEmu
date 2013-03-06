@@ -4,9 +4,14 @@ AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 	QSyntaxHighlighter(parent)
 {
 	HighlighterRule *memory = new HighlighterRule;
-	memory->pattern = QRegularExpression("\\s[0-9]+(\\s|;|$)");
+	memory->pattern = QRegularExpression("\\s([0-9]+|\\[[0-9]+\\])(\\s|;|$)");
 	memory->format.setForeground(Qt::red);
 	m_rules << memory;
+
+	HighlighterRule *value = new HighlighterRule;
+	value->pattern = QRegularExpression("\\s\\$[0-9]+(\\s|;|$)");
+	value->format.setForeground(Qt::darkYellow);
+	m_rules << value;
 
 	HighlighterRule *line = new HighlighterRule;
 	line->pattern = QRegularExpression("^[0-9]+\\s");
