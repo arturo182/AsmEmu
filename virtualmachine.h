@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QVector>
+#include <QMap>
 
 class VirtualMachine : public QObject
 {
@@ -19,6 +20,9 @@ class VirtualMachine : public QObject
 
 		void assemble(const QString &code);
 		bool exec();
+
+		int cellToLine(const int &cell) const;
+		int lineToCell(const int &line) const;
 
 		const QVector<int> &memory() const;
 		void setMemory(const QVector<int> &memory);
@@ -45,6 +49,7 @@ class VirtualMachine : public QObject
 		void registersChanged(const QVector<int> &registers);
 
 	private:
+		QMap<int, int> m_lineMap;
 		QVector<int> m_registers;
 		QVector<int> m_memory;
 		int m_execCell;

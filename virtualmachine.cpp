@@ -26,6 +26,8 @@ VirtualMachine::VirtualMachine(QObject *parent) :
  */
 void VirtualMachine::assemble(const QString &code)
 {
+	m_lineMap.clear();
+
 	QStringList lines = code.split('\n', QString::SkipEmptyParts);
 
 	for(int i = 0; i < lines.size(); ++i) {
@@ -49,6 +51,8 @@ void VirtualMachine::assemble(const QString &code)
 		const int cellNumber = parts[0].toInt();
 		if(cellNumber > m_memory.size())
 			continue;
+
+		m_lineMap.insert(i, cellNumber);
 
 		if(parts.size() == 3) {
 			const QString mnemonic = parts[1];
@@ -160,6 +164,16 @@ bool VirtualMachine::exec()
 		return false;
 
 	return true;
+}
+
+int VirtualMachine::cellToLine(const int &cell) const
+{
+	return m_lineMap.key(cell);
+}
+
+int VirtualMachine::lineToCell(const int &line) const
+{
+	return m_lineMap.value(line);
 }
 
 const QVector<int> &VirtualMachine::memory() const
