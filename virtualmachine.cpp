@@ -57,32 +57,64 @@ void VirtualMachine::assemble(const QString &code)
 		lines[i] = lines[i].toUpper();
 	}
 
+	int lastCellNumber = 0;
+
 	for(int i = 0; i < lines.size(); ++i) {
 		const QString line = lines[i];
 		const QStringList parts = line.split(' ');
 		if(!parts.size())
 			continue;
 
-		const int cellNumber = parts[0].toInt();
-		if(cellNumber > m_memory.size())
-			continue;
-
-		m_lineMap.insert(i, cellNumber);
-
 		if(parts.size() == 3) {
+			const int cellNumber = parts[0].toInt();
+			if(cellNumber > m_memory.size())
+				continue;
+
 			const QString mnemonic = parts[1];
 			const int value = parts[2].toInt();
 
 			m_memory[cellNumber] = 1000 * mnemonicValues[mnemonic] + value;
+
+			m_lineMap.insert(i, cellNumber);
+			lastCellNumber = cellNumber;
 		} else if(parts.size() == 2) {
+			bool hasCellNumber = false;
+			const int cellNumber = parts[0].toInt(&hasCellNumber);
+
+			if(hasCellNumber) {
+				bool isNumber = false;
+				const int value = parts[1].toInt(&isNumber);
+
+				if(isNumber) {
+					m_memory[cellNumber] = value;
+				} else {
+					if(parts[1] == "HLT") {
+						m_memory[cellNumber] = 0;
+					}
+				}
+
+				lastCellNumber = cellNumber;
+			} else { //sequential instructions
+				const QString mnemonic = parts[0];
+				const int value = parts[1].toInt();
+
+				++lastCellNumber;
+
+				m_memory[lastCellNumber] = 1000 * mnemonicValues[mnemonic] + value;
+				m_lineMap.insert(i, lastCellNumber);
+			}
+		} else if(parts.size() == 1) { //sequential values
 			bool isNumber = false;
-			const int value = parts[1].toInt(&isNumber);
+			const int value = parts[0].toInt(&isNumber);
+
+			++lastCellNumber;
 
 			if(isNumber) {
-				m_memory[cellNumber] = value;
+				m_memory[lastCellNumber] = value;
 			} else {
-				if(parts[1] == "HLT") {
-					m_memory[cellNumber] = 0;
+				if(parts[0] == "HLT") {
+					m_memory[lastCellNumber] = 0;
+					m_lineMap.insert(i, lastCellNumber);
 				}
 			}
 		}
