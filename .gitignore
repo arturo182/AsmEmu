@@ -2,7 +2,7 @@ Makefile*
 /release/*
 /debug/*
 *.qm
-*.pro.user
+*.pro.user*
 object_script.*
 *.dll
 *.exe
