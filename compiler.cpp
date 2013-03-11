@@ -445,6 +445,7 @@ bool Compiler::compile()
 				if(isNumber) {
 					//variable definition
 
+					m_lineMap.insert(i + 1, dataStart);
 					m_labelMap.insert(label, dataStart);
 					emit memoryChanged(dataStart, value);
 					++dataStart;
@@ -474,9 +475,9 @@ bool Compiler::compile()
 						//a HLT mnemonic
 						emit memoryChanged(cellNumber, VirtualMachine::intToMemory(0));
 						codeStart = cellNumber + 1;
-
-						m_lineMap.insert(i + 1, cellNumber);
 					}
+
+					m_lineMap.insert(i + 1, cellNumber);
 				} else {
 					//mnemonic and value
 
