@@ -136,7 +136,8 @@ void MainWindow::assemble()
 
 void MainWindow::startExec()
 {
-	m_ui->codeEdit->setEnabled(false);
+	m_ui->codeEdit->setReadOnly(true);
+	m_asmHighlighter->setEnabled(false);
 	m_startCellSpinBox->setEnabled(false);
 	m_ui->startAction->setEnabled(false);
 	m_ui->singleStepAction->setEnabled(false);
@@ -164,7 +165,8 @@ void MainWindow::startExec()
 void MainWindow::singleExec()
 {
 	if(m_ui->startAction->isEnabled()) {
-		m_ui->codeEdit->setEnabled(false);
+		m_ui->codeEdit->setReadOnly(true);
+		m_asmHighlighter->setEnabled(false);
 		m_startCellSpinBox->setEnabled(false);
 		m_ui->startAction->setEnabled(false);
 		m_ui->memorySizeAction->setEnabled(false);
@@ -200,7 +202,8 @@ void MainWindow::rewindExec()
 	m_virtualMachine->setRegisters(m_prevRegisters);
 	m_startCellSpinBox->setValue(m_prevStartCell);
 
-	m_ui->codeEdit->setEnabled(true);
+	m_ui->codeEdit->setReadOnly(false);
+	m_asmHighlighter->setEnabled(true);
 	m_startCellSpinBox->setEnabled(true);
 	m_ui->startAction->setEnabled(true);
 	m_ui->singleStepAction->setEnabled(true);
@@ -258,14 +261,15 @@ void MainWindow::updateLabels()
 		if(!m_labelItems.contains(i)) {
 			QTreeWidgetItem *labelItem = new QTreeWidgetItem(m_ui->labelsTree);
 			labelItem->setText(0, m_virtualMachine->labelName(i));
-			labelItem->setText(1, QString::number(m_virtualMachine->labels().at(i)));
+			labelItem->setText(1, QString::number(m_virtualMachine->labelCellNo(i)));
+			labelItem->setText(2, QString::number(m_virtualMachine->labels().at(i)));
 			m_labelItems.insert(i, labelItem);
 
 			continue;
 		}
 
 		QTreeWidgetItem *labelItem = m_labelItems.value(i);
-		labelItem->setText(1, QString::number(m_virtualMachine->labels().at(i)));
+		labelItem->setText(2, QString::number(m_virtualMachine->labels().at(i)));
 	}
 }
 

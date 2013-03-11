@@ -27,11 +27,14 @@ class AsmHighlighter: public QSyntaxHighlighter
 		explicit AsmHighlighter(QTextDocument *parent = 0);
 		~AsmHighlighter();
 
+		void setEnabled(bool enabled);
+
 	protected:
 		void highlightBlock(const QString &text);
 
 	private:
 		QList<HighlighterRule*> m_rules;
+		bool m_enabled;
 };
 
 #endif // ASMHIGHLIGHTER_H

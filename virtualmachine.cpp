@@ -310,6 +310,11 @@ QVector<int> VirtualMachine::labels()
 	return labels;
 }
 
+int VirtualMachine::labelCellNo(const int &labelNo) const
+{
+	return m_labels.values().at(labelNo);
+}
+
 QString VirtualMachine::labelName(const int &labelNo) const
 {
 	return m_labels.keys().at(labelNo);

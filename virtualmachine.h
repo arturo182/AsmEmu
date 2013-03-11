@@ -55,6 +55,7 @@ class VirtualMachine : public QObject
 		int registerCount() const;
 
 		QVector<int> labels();
+		int labelCellNo(const int &labelNo) const;
 		QString labelName(const int &labelNo) const;
 		int labelCount() const;
 

@@ -313,9 +313,17 @@ p, li { white-space: pre-wrap; }
      </property>
      <item>
       <widget class="QTreeWidget" name="labelsTree">
+       <property name="indentation">
+        <number>0</number>
+       </property>
        <column>
         <property name="text">
          <string>Name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Address</string>
         </property>
        </column>
        <column>

@@ -1,7 +1,10 @@
 #include "asmhighlighter.h"
 
+#include <QDebug>
+
 AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
-	QSyntaxHighlighter(parent)
+	QSyntaxHighlighter(parent),
+	m_enabled(true)
 {
 	//the order here is important
 
@@ -33,8 +36,19 @@ AsmHighlighter::~AsmHighlighter()
 	m_rules.clear();
 }
 
+void AsmHighlighter::setEnabled(bool enabled)
+{
+	m_enabled = enabled;
+	rehighlight();
+}
+
 void AsmHighlighter::highlightBlock(const QString &text)
 {
+	if(!m_enabled) {
+		setFormat(0, text.size(), Qt::darkGray);
+		return;
+	}
+
 	foreach(HighlighterRule *rule, m_rules) {
 		const QRegularExpression expression = rule->pattern;
 
