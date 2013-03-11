@@ -84,12 +84,18 @@ void MainWindow::newFile()
 
 void MainWindow::open()
 {
-	if(maybeSave()) {
-		const QString fileName = QFileDialog::getOpenFileName(this, QString(), QString(), tr("Assembler files (*.asm)"));
+	if(!maybeSave())
+		return;
 
-		if(!fileName.isEmpty())
-			loadFile(fileName);
-	}
+	QSettings set;
+
+	const QString fileName = QFileDialog::getOpenFileName(this, QString(), set.value("lastDir").toString(), tr("Assembler files (*.asm)"));
+
+	//save directory
+	set.setValue("lastDir", QFileInfo(fileName).absolutePath());
+
+	if(!fileName.isEmpty())
+		loadFile(fileName);
 }
 
 bool MainWindow::save()
@@ -102,9 +108,14 @@ bool MainWindow::save()
 
 bool MainWindow::saveAs()
 {
-	const QString fileName = QFileDialog::getSaveFileName(this, QString(), QString(), tr("Assembler files (*.asm)"));
+	QSettings set;
+
+	const QString fileName = QFileDialog::getSaveFileName(this, QString(), set.value("lastDir").toString(), tr("Assembler files (*.asm)"));
 	if(fileName.isEmpty())
 		return false;
+
+	//save directory
+	set.setValue("lastDir", QFileInfo(fileName).absolutePath());
 
 	return saveFile(fileName);
 }
@@ -292,11 +303,11 @@ void MainWindow::changeLanguage()
 	bool dlgAccepted = false;
 	const QString newLang = QInputDialog::getItem(this, tr("Change language"), tr("Choose language:"), fullLangs, current, false, &dlgAccepted);
 
-	if(dlgAccepted) {
-		set.setValue("lang", langs.at(fullLangs.indexOf(newLang)));
+	if(!dlgAccepted)
+		return;
 
-		QMessageBox::information(this, tr("Restart needed"), tr("The language change will take effect after you restart the application."));
-	}
+	set.setValue("lang", langs.at(fullLangs.indexOf(newLang)));
+	QMessageBox::information(this, tr("Restart needed"), tr("The language change will take effect after you restart the application."));
 }
 
 void MainWindow::toggleAsmHelp()
