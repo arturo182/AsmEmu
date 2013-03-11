@@ -218,7 +218,7 @@ void MainWindow::rewindExec()
 
 void MainWindow::about()
 {
-	QMessageBox::about(this, tr("AsmEmu"), tr("Assembler Emulator v%1<br>Copyright &copy; 2013 Artur Pacholec").arg(Constants::Version));
+	QMessageBox::about(this, tr("AsmEmu"), tr("Assembler Emulator v%1<br>Copyright &copy; 2013 <a href=\"mailto: arturo182@tlen.pl\">Artur Pacholec</a>").arg(Constants::Version));
 }
 
 void MainWindow::documentWasModified()

@@ -281,6 +281,11 @@ p, li { white-space: pre-wrap; }
         <translation></translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="221"/>
+        <source>Assembler Emulator v%1&lt;br&gt;Copyright &amp;copy; 2013 &lt;a href=&quot;mailto: arturo182@tlen.pl&quot;&gt;Artur Pacholec&lt;/a&gt;</source>
+        <translation>Emulator Assemblera v%1&lt;br&gt;Copyright &amp;copy; 2013 &lt;a href=&quot;mailto: arturo182@tlen.pl&quot;&gt;Artur Pacholec&lt;/a&gt;</translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="348"/>
         <source>Choose language:</source>
         <translation>Wybierz język:</translation>
@@ -321,9 +326,8 @@ p, li { white-space: pre-wrap; }
         <translation>Linia %1 Kol %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="221"/>
         <source>Assembler Emulator v%1&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</source>
-        <translation>Emulator Assemblera v%1&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</translation>
+        <translation type="obsolete">Emulator Assemblera v%1&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="333"/>

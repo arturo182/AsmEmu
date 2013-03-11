@@ -267,6 +267,11 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../mainwindow.cpp" line="221"/>
+        <source>Assembler Emulator v%1&lt;br&gt;Copyright &amp;copy; 2013 &lt;a href=&quot;mailto: arturo182@tlen.pl&quot;&gt;Artur Pacholec&lt;/a&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../mainwindow.cpp" line="348"/>
         <source>Choose language:</source>
         <translation type="unfinished"></translation>
@@ -304,11 +309,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../mainwindow.cpp" line="278"/>
         <source>Line %1 Col %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../mainwindow.cpp" line="221"/>
-        <source>Assembler Emulator v%1&lt;br&gt;Copyright &amp;copy; 2013 Artur Pacholec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
