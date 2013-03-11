@@ -44,6 +44,7 @@ class MainWindow : public QMainWindow
 		void documentWasModified();
 		void updateActions();
 		void updateRegisters();
+		void updateLabels();
 		void updateCursorPosition();
 		void updateMruMenu();
 		void clearMru();
@@ -65,6 +66,7 @@ class MainWindow : public QMainWindow
 		Ui::MainWindow *m_ui;
 		QSignalMapper *m_mruMapper;
 		QMap<int, QTreeWidgetItem*> m_registerItems;
+		QMap<int, QTreeWidgetItem*> m_labelItems;
 		AsmHighlighter *m_asmHighlighter;
 		VirtualMachine *m_virtualMachine;
 		QVector<int> m_prevRegisters;

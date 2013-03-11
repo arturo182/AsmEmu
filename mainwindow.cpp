@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_mruMapper, mapped, this, &MainWindow::loadFile);
 
 	connect(m_virtualMachine, &VirtualMachine::registersChanged, this, &MainWindow::updateRegisters);
+	connect(m_virtualMachine, &VirtualMachine::labelsChanged, this, &MainWindow::updateLabels);
 	connect(m_virtualMachine, &VirtualMachine::memoryChanged, m_ui->memoryView, &MemoryView::setMemory);
 	connect(m_virtualMachine, &VirtualMachine::memoryChanged, [=](const QVector<int> &memory)
 	{
@@ -205,6 +206,10 @@ void MainWindow::rewindExec()
 	m_ui->singleStepAction->setEnabled(true);
 	m_ui->memorySizeAction->setEnabled(true);
 	m_ui->rewindAction->setEnabled(false);
+
+	m_ui->labelsTree->clear();
+	m_labelItems.clear();
+
 	updateActions();
 }
 
@@ -244,6 +249,23 @@ void MainWindow::updateRegisters()
 
 		QTreeWidgetItem *registerItem = m_registerItems.value(i);
 		registerItem->setText(1, QString::number(m_virtualMachine->registers().at(i)));
+	}
+}
+
+void MainWindow::updateLabels()
+{
+	for(int i = 0; i < m_virtualMachine->labelCount(); ++i) {
+		if(!m_labelItems.contains(i)) {
+			QTreeWidgetItem *labelItem = new QTreeWidgetItem(m_ui->labelsTree);
+			labelItem->setText(0, m_virtualMachine->labelName(i));
+			labelItem->setText(1, QString::number(m_virtualMachine->labels().at(i)));
+			m_labelItems.insert(i, labelItem);
+
+			continue;
+		}
+
+		QTreeWidgetItem *labelItem = m_labelItems.value(i);
+		labelItem->setText(1, QString::number(m_virtualMachine->labels().at(i)));
 	}
 }
 
@@ -339,6 +361,7 @@ void MainWindow::readSettings()
 	restoreGeometry(set.value("geometry").toByteArray());
 	restoreState(set.value("state").toByteArray());
 	m_ui->registersTree->header()->restoreState(set.value("regCols").toByteArray());
+	m_ui->labelsTree->header()->restoreState(set.value("labelCols").toByteArray());
 	m_ui->splitter->restoreState(set.value("splitter").toByteArray());
 	m_ui->asmHelpEdit->setVisible(set.value("asmHelp", false).toBool());
 	m_virtualMachine->setMemorySize(set.value("memorySize", 100).toInt());
@@ -350,6 +373,7 @@ void MainWindow::writeSettings()
 	set.setValue("geometry", saveGeometry());
 	set.setValue("state", saveState());
 	set.setValue("regCols", m_ui->registersTree->header()->saveState());
+	set.setValue("labelCols", m_ui->labelsTree->header()->saveState());
 	set.setValue("splitter", m_ui->splitter->saveState());
 	set.setValue("asmHelp", m_ui->asmHelpEdit->isVisible());
 	set.setValue("memorySize", m_virtualMachine->memorySize());

@@ -28,15 +28,17 @@ Compiler::Compiler(const QString &code)
 		//trim whitespace
 		m_lines[i].replace(QRegularExpression("\\s+"), " ");
 		m_lines[i] = m_lines[i].trimmed();
-
-		//uppercase
-		m_lines[i] = m_lines[i].toUpper();
 	}
 }
 
 const QMap<int, int> &Compiler::lineMap() const
 {
 	return m_lineMap;
+}
+
+const QMap<QString, int> &Compiler::labelMap() const
+{
+	return m_labelMap;
 }
 
 int Compiler::startCell() const
@@ -46,7 +48,7 @@ int Compiler::startCell() const
 
 int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue)
 {
-	VirtualMachine::Instruction instr = mnemonicMap.value(mnemonic);
+	VirtualMachine::Instruction instr = mnemonicMap.value(mnemonic.toUpper());
 
 	const bool isConst = strValue.contains('$');
 	const bool isAddress = strValue.contains('[');
@@ -428,9 +430,9 @@ bool Compiler::compile()
 			if(parts[0].startsWith('.')) {
 				//directive
 
-				if(parts[0] == ".DATA") {
+				if(parts[0].toLower() == ".data") {
 					dataStart = parts[1].toInt();
-				} else if(parts[0] == ".CODE") {
+				} else if(parts[0].toLower() == ".code") {
 					codeStart = parts[1].toInt();
 					m_startCell = codeStart;
 				}
@@ -468,7 +470,7 @@ bool Compiler::compile()
 						//memory value
 						emit memoryChanged(cellNumber, value);
 						dataStart = cellNumber + 1;
-					} else if(parts[1] == "HLT") {
+					} else if(parts[1].toLower() == "hlt") {
 						//a HLT mnemonic
 						emit memoryChanged(cellNumber, VirtualMachine::intToMemory(0));
 						codeStart = cellNumber + 1;
@@ -489,14 +491,6 @@ bool Compiler::compile()
 
 					m_lineMap.insert(i + 1, codeStart);
 					codeStart += size;
-
-					/*const QString mnemonic = parts[0];
-					const int value = parts[1].toInt();
-
-					++lastCellNumber;
-
-					m_memory[lastCellNumber] = 1000 * mnemonicValues[mnemonic] + value;
-					m_lineMap.insert(i + 1, lastCellNumber);*/
 				}
 			}
 		} else if(parts.size() == 1) {
@@ -512,7 +506,7 @@ bool Compiler::compile()
 				//sequential memory value
 				emit memoryChanged(dataStart, value);
 				++dataStart;
-			} else if(parts[0] == "HLT") {
+			} else if(parts[0].toLower() == "hlt") {
 				//a HLT mnemonic
 				emit memoryChanged(codeStart, VirtualMachine::intToMemory(0));
 				m_lineMap.insert(i + 1, codeStart);

@@ -41,9 +41,6 @@ class VirtualMachine : public QObject
 		int assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue);
 		bool exec();
 
-		int cellToLine(const int &cell) const;
-		int lineToCell(const int &line) const;
-
 		const QVector<int> &memory() const;
 		void setMemory(const QVector<int> &memory);
 
@@ -57,6 +54,10 @@ class VirtualMachine : public QObject
 		void setRegisterCount(const int &registerCount);
 		int registerCount() const;
 
+		QVector<int> labels();
+		QString labelName(const int &labelNo) const;
+		int labelCount() const;
+
 		void setExecCell(const int &execCell);
 		int execCell() const;
 
@@ -67,9 +68,10 @@ class VirtualMachine : public QObject
 	signals:
 		void memoryChanged(const QVector<int> &memory);
 		void registersChanged(const QVector<int> &registers);
+		void labelsChanged();
 
 	private:
-		QMap<int, int> m_lineMap;
+		QMap<QString, int> m_labels;
 		QVector<int> m_registers;
 		QVector<int> m_memory;
 		int m_execCell;

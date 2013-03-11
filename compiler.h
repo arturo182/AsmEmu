@@ -15,6 +15,7 @@ class Compiler : public QObject
 		bool compile();
 
 		const QMap<int, int> &lineMap() const;
+		const QMap<QString, int> &labelMap() const;
 		int startCell() const;
 
 	signals:

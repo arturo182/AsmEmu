@@ -44,6 +44,9 @@ void VirtualMachine::assemble(const QString &code)
 	});
 
 	compiler.compile();
+
+	m_labels = compiler.labelMap();
+	emit labelsChanged();
 }
 
 /**
@@ -217,21 +220,12 @@ bool VirtualMachine::exec()
 
 	emit memoryChanged(m_memory);
 	emit registersChanged(m_registers);
+	emit labelsChanged();
 
 	if(m_execCell > m_memory.size())
 		return false;
 
 	return true;
-}
-
-int VirtualMachine::cellToLine(const int &cell) const
-{
-	return m_lineMap.key(cell);
-}
-
-int VirtualMachine::lineToCell(const int &line) const
-{
-	return m_lineMap.value(line);
 }
 
 const QVector<int> &VirtualMachine::memory() const
@@ -304,6 +298,26 @@ void VirtualMachine::setRegisterCount(const int &registerCount)
 int VirtualMachine::registerCount() const
 {
 	return m_registers.size();
+}
+
+QVector<int> VirtualMachine::labels()
+{
+	QVector<int> labels;
+
+	foreach(const int &cellNo, m_labels.values())
+		labels << m_memory[cellNo];
+
+	return labels;
+}
+
+QString VirtualMachine::labelName(const int &labelNo) const
+{
+	return m_labels.keys().at(labelNo);
+}
+
+int VirtualMachine::labelCount() const
+{
+	return m_labels.count();
 }
 
 void VirtualMachine::setExecCell(const int &execCell)
