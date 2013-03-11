@@ -15,10 +15,13 @@ AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 	m_rules << new HighlighterRule("^[0-9]+\\s", Qt::darkMagenta);
 
 	//labels
-	m_rules << new HighlighterRule("(^[a-z_][_a-z0-9]+:\\s)|((hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)\\s[a-z_][_a-z0-9]+)", Qt::darkGray, QRegularExpression::CaseInsensitiveOption);
+	m_rules << new HighlighterRule("(^[a-z_][_a-z0-9]+:\\s)|((hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)\\s[a-z_][_a-z0-9]+)", QColor(250, 130, 0), QRegularExpression::CaseInsensitiveOption);
 
 	//mnemonics
 	m_rules << new HighlighterRule("\\s(hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)(\\s|;|$)", Qt::blue, QRegularExpression::CaseInsensitiveOption);
+
+	//directives
+	m_rules << new HighlighterRule("^\\.(.*)$", Qt::darkGray);
 
 	//comments
 	m_rules << new HighlighterRule(";(.*)$", Qt::darkGreen);
