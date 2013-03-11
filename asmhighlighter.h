@@ -11,8 +11,16 @@ class AsmHighlighter: public QSyntaxHighlighter
 	private:
 		struct HighlighterRule
 		{
-			QRegularExpression pattern;
-			QTextCharFormat format;
+			public:
+				HighlighterRule(const QString &patternStr, const QBrush &brush, const QRegularExpression::PatternOptions &options = QRegularExpression::NoPatternOption) :
+					pattern(QRegularExpression(patternStr))
+				{
+					format.setForeground(brush);
+					pattern.setPatternOptions(options);
+				}
+
+				QRegularExpression pattern;
+				QTextCharFormat format;
 		};
 
 	public:

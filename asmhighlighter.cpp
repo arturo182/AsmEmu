@@ -3,31 +3,25 @@
 AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 	QSyntaxHighlighter(parent)
 {
-	HighlighterRule *memory = new HighlighterRule;
-	memory->pattern = QRegularExpression("\\s([0-9]+|\\[[0-9]+\\])(\\s|;|$)");
-	memory->format.setForeground(Qt::red);
-	m_rules << memory;
+	//the order here is important
 
-	HighlighterRule *value = new HighlighterRule;
-	value->pattern = QRegularExpression("\\s\\$[0-9]+(\\s|;|$)");
-	value->format.setForeground(Qt::darkYellow);
-	m_rules << value;
+	//memory cells
+	m_rules << new HighlighterRule("\\s([0-9]+|\\[[0-9]+\\])(\\s|;|$)", Qt::red);
 
-	HighlighterRule *line = new HighlighterRule;
-	line->pattern = QRegularExpression("^[0-9]+\\s");
-	line->format.setForeground(Qt::darkMagenta);
-	m_rules << line;
+	//const values
+	m_rules << new HighlighterRule("\\s\\$[0-9]+(\\s|;|$)", Qt::darkYellow);
 
-	HighlighterRule *mnemonic = new HighlighterRule;
-	mnemonic->pattern = QRegularExpression("\\s(hlt|cpa|sto|add|sub|bra|brn|mul|brz)(\\s|;|$)");
-	mnemonic->pattern.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-	mnemonic->format.setForeground(Qt::blue);
-	m_rules << mnemonic;
+	//line numbers
+	m_rules << new HighlighterRule("^[0-9]+\\s", Qt::darkMagenta);
 
-	HighlighterRule *comment = new HighlighterRule;
-	comment->pattern = QRegularExpression(";(.*)$");
-	comment->format.setForeground(Qt::darkGreen);
-	m_rules << comment;
+	//labels
+	m_rules << new HighlighterRule("(^[a-z_][_a-z0-9]+:\\s)|((hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)\\s[a-z_][_a-z0-9]+)", Qt::darkGray, QRegularExpression::CaseInsensitiveOption);
+
+	//mnemonics
+	m_rules << new HighlighterRule("\\s(hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)(\\s|;|$)", Qt::blue, QRegularExpression::CaseInsensitiveOption);
+
+	//comments
+	m_rules << new HighlighterRule(";(.*)$", Qt::darkGreen);
 }
 
 AsmHighlighter::~AsmHighlighter()
