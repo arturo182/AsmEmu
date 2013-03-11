@@ -1,13 +1,12 @@
 ;potêgowanie
-;komórka pocz¹tkowa 10
 ;wynik w 3
-
 ;dane
-1	1003 ;podstawa (-3)
+1	3 ;podstawa (-3)
 	5 ;wyk³adnik
 4	1 ;do dekrementacji
 
 ;program
+.code 10
 10	CPA 4
 	STO 3
 	CPA 3

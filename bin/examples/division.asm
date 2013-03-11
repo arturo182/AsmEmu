@@ -1,11 +1,13 @@
-;dane
+;dzielenie z reszt¹
+
+.data 0
 dzielna:	20
 dzielnik:	7
 reszta:	0
 wynik:	0
 
-;program
-start:		CPA dzielnia
+.code 10
+start:		CPA dzielna
 		SUB dzielnik
 		BRN resztaKoniec
 		INC wynik

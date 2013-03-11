@@ -29,6 +29,7 @@
 29	10
 
 ;program
+.code 30
 start:	CPA $10
 	STO 1
 	CPA $20
@@ -36,7 +37,7 @@ start:	CPA $10
 	CPA $0
 	STO 8
 	CPA 9
-	BRZ koniec
+	BRZ 48
 	CPA [1]
 	MUL [2]
 	ADD 8
@@ -44,5 +45,5 @@ start:	CPA $10
 	INC 1
 	INC 2
 	DEC 9
-	BRA 36
+	BRA 38
 koniec:	HLT

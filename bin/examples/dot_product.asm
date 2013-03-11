@@ -1,11 +1,9 @@
 ;iloczyn skalarny
 ;wynik w 8
 
-;d³ugoœæ wektorów
-9	10
+9	10 ;d³ugoœæ wektorów
 
-;wektor 1
-10	2
+10	2 ;wektor 1
 11	2
 12	2
 13	2
@@ -16,8 +14,7 @@
 18	2
 19	2
 
-;wektor 2
-20	1
+20	1 ;wektor 2
 21	2
 22	3
 23	4
@@ -29,6 +26,7 @@
 29	10
 
 ;program
+.code 30
 30 	CPA $10
 	STO 1
 	CPA $20
@@ -36,7 +34,7 @@
 	CPA $0
 	STO 8
 	CPA 9
-	BRZ 46
+	BRZ 48
 	CPA [1]
 	MUL [2]
 	ADD 8
@@ -44,5 +42,5 @@
 	INC 1
 	INC 2
 	DEC 9
-	BRA 36
+	BRA 38
 	HLT

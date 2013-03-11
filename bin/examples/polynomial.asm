@@ -1,5 +1,4 @@
 ;f(x) = ax^3 + bx^2 + cx + d
-;komórka startowa 10
 ;wynik w 4
 
 5	2 ; x
@@ -10,7 +9,7 @@
 
 ;schemat hornera
 ;((a * x + b) * x + c) * x + d
-
+.code 10
 10	CPA 6;		3
 11	MUL 5;		3 * 2
 12	ADD 7;		3 * 2 + 4
