@@ -10,9 +10,24 @@ class VirtualMachine : public QObject
 	Q_OBJECT
 
 	public:
-		enum Registers
+		enum Register
 		{
 			ACU = 0
+		};
+
+		enum Instruction
+		{
+			HLT = 0,
+			INC,
+			DEC,
+			CPA,
+			STO,
+			ADD,
+			SUB,
+			BRA,
+			BRN,
+			MUL,
+			BRZ
 		};
 
 	public:
@@ -23,6 +38,7 @@ class VirtualMachine : public QObject
 		explicit VirtualMachine(QObject *parent = 0);
 
 		void assemble(const QString &code);
+		int assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue);
 		bool exec();
 
 		int cellToLine(const int &cell) const;

@@ -1,5 +1,7 @@
 #include "virtualmachine.h"
 
+#include "compiler.h"
+
 #include <QRegularExpression>
 #include <QProgressDialog>
 #include <QApplication>
@@ -7,8 +9,6 @@
 #include <QRegExp>
 #include <QDebug>
 #include <QMap>
-
-const QMap<QString, int> mnemonicValues(std::map<QString, int>({{ "CPA", 1 }, { "STO", 2 }, { "ADD", 3 }, { "SUB", 4 }, { "BRA", 5 }, { "BRN", 6 }, { "MUL", 7 }, { "BRZ", 8 }}));
 
 int VirtualMachine::memoryToInt(const int &mem)
 {
@@ -33,94 +33,17 @@ VirtualMachine::VirtualMachine(QObject *parent) :
 	setRegisterCount(1);
 }
 
-/**
- * @brief VirtualMachine::assemble
- * @param code Assembler code
- *
- * Transforms asm code to memory cell values.
- */
 void VirtualMachine::assemble(const QString &code)
 {
-	m_lineMap.clear();
+	Compiler compiler(code);
+	compiler.compile();
 
-	QStringList lines = code.split('\n', QString::SkipEmptyParts);
+	connect(&compiler, &Compiler::memoryChanged, [=](const int &cellNo, const int &value)
+	{
+		m_memory[cellNo] = value;
+	});
 
-	for(int i = 0; i < lines.size(); ++i) {
-		//strip comments
-		lines[i].remove(QRegularExpression(";(.*)$"));
-
-		//trim whitespace
-		lines[i].replace(QRegularExpression("\\s+"), " ");
-		lines[i] = lines[i].trimmed();
-
-		//uppercase
-		lines[i] = lines[i].toUpper();
-	}
-
-	int lastCellNumber = 0;
-
-	for(int i = 0; i < lines.size(); ++i) {
-		const QString line = lines[i];
-		const QStringList parts = line.split(' ');
-		if(!parts.size())
-			continue;
-
-		if(parts.size() == 3) {
-			const int cellNumber = parts[0].toInt();
-			if(cellNumber > m_memory.size())
-				continue;
-
-			const QString mnemonic = parts[1];
-			const int value = parts[2].toInt();
-
-			m_memory[cellNumber] = 1000 * mnemonicValues[mnemonic] + value;
-
-			m_lineMap.insert(i, cellNumber);
-			lastCellNumber = cellNumber;
-		} else if(parts.size() == 2) {
-			bool hasCellNumber = false;
-			const int cellNumber = parts[0].toInt(&hasCellNumber);
-
-			if(hasCellNumber) {
-				bool isNumber = false;
-				const int value = parts[1].toInt(&isNumber);
-
-				if(isNumber) {
-					m_memory[cellNumber] = value;
-				} else {
-					if(parts[1] == "HLT") {
-						m_memory[cellNumber] = 0;
-					}
-				}
-
-				lastCellNumber = cellNumber;
-			} else { //sequential instructions
-				const QString mnemonic = parts[0];
-				const int value = parts[1].toInt();
-
-				++lastCellNumber;
-
-				m_memory[lastCellNumber] = 1000 * mnemonicValues[mnemonic] + value;
-				m_lineMap.insert(i, lastCellNumber);
-			}
-		} else if(parts.size() == 1) { //sequential values
-			bool isNumber = false;
-			const int value = parts[0].toInt(&isNumber);
-
-			++lastCellNumber;
-
-			if(isNumber) {
-				m_memory[lastCellNumber] = value;
-			} else {
-				if(parts[0] == "HLT") {
-					m_memory[lastCellNumber] = 0;
-					m_lineMap.insert(i, lastCellNumber);
-				}
-			}
-		}
-	}
-
-	emit memoryChanged(m_memory);
+	compiler.compile();
 }
 
 /**
@@ -134,47 +57,114 @@ bool VirtualMachine::exec()
 	if((m_execCell > m_memory.size()) || (m_execCell < 0))
 		return false;
 
-	const int instr = m_memory[m_execCell] / 1000;
-	const int value = m_memory[m_execCell] - instr * 1000;
+	const int kilo = m_memory[m_execCell] / 1000;
+	const int hecto = m_memory[m_execCell] / 100 % 10;
+	const int deca = m_memory[m_execCell] / 10 % 10;
+
+	const int hectoValue = m_memory[m_execCell] - kilo * 1000;
+	const int decaValue = hectoValue - hecto * 100;
+	const int oneValue = decaValue - 10 * deca;
+
+	int value = -1;
+
+	Instruction instr = HLT;
+	bool isConst = false;
+
+	if(kilo == 0) {
+		if(hecto == 0) {
+			instr = HLT;
+		} else if(hecto == 1) {
+			instr = INC;
+			value = decaValue;
+		} else if(hecto == 2) {
+			instr = DEC;
+			value = decaValue;
+		}
+	} else if(kilo == 1) {
+		instr = CPA;
+		value = hectoValue;
+	} else if(kilo == 2) {
+		instr = STO;
+		value = hectoValue;
+	} else if(kilo == 3) {
+		instr = ADD;
+		value = hectoValue;
+	} else if(kilo == 4) {
+		instr = SUB;
+		value = hectoValue;
+	} else if(kilo == 5) {
+		instr = BRA;
+		value = hectoValue;
+	} else if(kilo == 6) {
+		instr = BRN;
+		value = hectoValue;
+	} else if(kilo == 7) {
+		instr = MUL;
+		value = hectoValue;
+	} else if(kilo == 8) {
+		instr = BRZ;
+		value = hectoValue;
+	} else if(kilo == 9) {
+		static QList<Instruction> instrList = { INC, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ, DEC };
+		instr = instrList[deca];
+
+		if(hecto == 0) {
+			++m_execCell;
+			value = m_memory[m_execCell];
+		} else if(hecto == 1) {
+			isConst = true;
+			value = oneValue;
+		} else if(hecto == 2) {
+			isConst = true;
+			++m_execCell;
+			value = m_memory[m_execCell];
+		} else if(hecto == 3) {
+			value = m_memory[oneValue];
+		} else if(hecto == 4) {
+			++m_execCell;
+			value = memoryToInt(m_memory[m_execCell]);
+			value = m_memory[value];
+		}
+	}
 
 	switch(instr) {
-		case 1: //CPA
+		case CPA:
 		{
-			m_registers[ACU] = m_memory[value];
+			m_registers[ACU] = isConst ? value : m_memory[value];
 			++m_execCell;
 		}
 		break;
 
-		case 2: //STO
+		case STO:
 		{
 			m_memory[value] = m_registers[ACU];
 			++m_execCell;
 		}
 		break;
 
-		case 3: // ADD
+		case ADD:
 		{
-			const int result = memoryToInt(m_registers[ACU]) + memoryToInt(m_memory[value]);
+			const int result = memoryToInt(m_registers[ACU]) + memoryToInt(isConst ? value : m_memory[value]);
 			m_registers[ACU] = intToMemory(result);
 			++m_execCell;
 		}
 		break;
 
-		case 4: //SUB
+		case SUB:
 		{
-			const int result = memoryToInt(m_registers[ACU]) - memoryToInt(m_memory[value]);
+			const int result = memoryToInt(m_registers[ACU]) - memoryToInt(isConst ? value : m_memory[value]);
 			m_registers[ACU] = intToMemory(result);
 			++m_execCell;
 		}
 		break;
 
-		case 5: //BRA
+		case BRA:
 		{
 			m_execCell = value;
 		}
 		break;
 
-		case 6: //BRN
+		case BRN:
 		{
 			if(memoryToInt(m_registers[ACU]) < 0) {
 				m_execCell = value;
@@ -184,15 +174,15 @@ bool VirtualMachine::exec()
 		}
 		break;
 
-		case 7: //MUL
+		case MUL:
 		{
-			const int result = memoryToInt(m_registers[ACU]) * memoryToInt(m_memory[value]);
+			const int result = memoryToInt(m_registers[ACU]) * memoryToInt(isConst ? value : m_memory[value]);
 			m_registers[ACU] = intToMemory(result);
 			++m_execCell;
 		}
 		break;
 
-		case 8: //BRZ
+		case BRZ:
 		{
 			if(memoryToInt(m_registers[ACU]) == 0) {
 				m_execCell = value;
@@ -202,7 +192,25 @@ bool VirtualMachine::exec()
 		}
 		break;
 
-		case 0: //HLT
+		case INC:
+		{
+			if(value > -1)
+				m_memory[value] = intToMemory(memoryToInt(m_memory[value]) + 1);
+
+			++m_execCell;
+		}
+		break;
+
+		case DEC:
+		{
+			if(value > -1)
+				m_memory[value] = intToMemory(memoryToInt(m_memory[value]) - 1);
+
+			++m_execCell;
+		}
+		break;
+
+		case HLT: //HLT
 		default:
 			return false;
 	}
@@ -275,11 +283,11 @@ QString VirtualMachine::registerName(const int &registerNo) const
 {
 	switch(registerNo) {
 		case 0:
-			return "ACU";
+		return "ACU";
 		break;
 
 		default:
-			return tr("Unknown");
+		return tr("Unknown");
 	}
 }
 

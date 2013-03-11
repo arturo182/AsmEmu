@@ -14,6 +14,7 @@
 #include <QSettings>
 #include <QSpinBox>
 #include <QLabel>
+#include "compiler.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -277,19 +278,13 @@ void MainWindow::clearMru()
 	QSettings set;
 	set.setValue("mru", QStringList());
 }
-
+#include <QDebug>
 void MainWindow::setStartLine(const int &lineNo)
 {
-	const QString line = m_ui->codeEdit->document()->findBlockByLineNumber(lineNo - 1).text().replace(QRegularExpression("\\s+"), " ");
-	const QStringList parts = line.split(' ', QString::SkipEmptyParts);
+	Compiler compiler(m_ui->codeEdit->toPlainText());
+	compiler.compile();
 
-	if(!parts.size())
-		return;
-
-	bool isNumber = false;
-	const int cellNo = parts[0].toInt(&isNumber);
-	if(!isNumber)
-		return;
+	const int cellNo = compiler.lineMap().value(lineNo);
 
 	m_startCellSpinBox->setValue(cellNo);
 	m_ui->codeEdit->setSpecialLine(lineNo);
@@ -299,23 +294,11 @@ void MainWindow::setStartCell(const int &cellNo)
 {
 	m_ui->codeEdit->setSpecialLine(-1);
 
-	for(int i = 0; i < m_ui->codeEdit->blockCount(); ++i) {
-		const QString line = m_ui->codeEdit->document()->findBlockByNumber(i).text().replace(QRegularExpression("\\s+"), " ");
-		const QStringList parts = line.split(' ', QString::SkipEmptyParts);
+	Compiler compiler(m_ui->codeEdit->toPlainText());
+	compiler.compile();
 
-		if(!parts.size())
-			continue;
-
-		bool isNumber = false;
-		const int lineCellNo = parts[0].toInt(&isNumber);
-		if(!isNumber)
-			continue;
-
-		if(lineCellNo == cellNo) {
-			m_ui->codeEdit->setSpecialLine(i + 1);
-			return;
-		}
-	}
+	const int lineNo = compiler.lineMap().key(cellNo);
+	m_ui->codeEdit->setSpecialLine(lineNo);
 }
 
 void MainWindow::changeMemorySize()
@@ -396,6 +379,10 @@ void MainWindow::loadFile(const QString &fileName)
 	QTextStream in(&file);
 	m_ui->codeEdit->setPlainText(in.readAll());
 	file.close();
+
+	Compiler compiler(m_ui->codeEdit->toPlainText());
+	compiler.compile();
+	m_startCellSpinBox->setValue(compiler.startCell());
 
 	setCurrentFile(fileName);
 }
