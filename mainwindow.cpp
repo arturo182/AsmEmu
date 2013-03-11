@@ -6,6 +6,7 @@
 #include "contants.h"
 
 #include <QRegularExpression>
+#include <QSignalMapper>
 #include <QInputDialog>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -17,6 +18,7 @@
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
+	m_mruMapper(new QSignalMapper(this)),
 	m_virtualMachine(new VirtualMachine(this)),
 	m_startCellSpinBox(new QSpinBox(this)),
 	m_positionLabel(new QLabel(this))
@@ -28,6 +30,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->statusBar->addPermanentWidget(m_positionLabel);
 
 	m_asmHighlighter = new AsmHighlighter(m_ui->codeEdit->document());
+
+	connect(m_ui->fileMenu, &QMenu::aboutToShow, this, &MainWindow::updateMruMenu);
+
+	void (QSignalMapper:: *mapped)(const QString &) = &QSignalMapper::mapped;
+	connect(m_mruMapper, mapped, this, &MainWindow::loadFile);
 
 	connect(m_virtualMachine, &VirtualMachine::registersChanged, this, &MainWindow::updateRegisters);
 	connect(m_virtualMachine, &VirtualMachine::memoryChanged, m_ui->memoryView, &MemoryView::setMemory);
@@ -243,6 +250,34 @@ void MainWindow::updateCursorPosition()
 {
 	m_positionLabel->setText(tr("Line %1 Col %2").arg(m_ui->codeEdit->textCursor().block().blockNumber()).arg(m_ui->codeEdit->textCursor().positionInBlock()));
 }
+
+void MainWindow::updateMruMenu()
+{
+	m_ui->recentFilesMenu->clear();
+
+	QSettings set;
+	const QStringList files = set.value("mru").toStringList();
+	foreach(const QString &fileName, files) {
+		QAction *action = m_ui->recentFilesMenu->addAction(fileName);
+		connect(action, SIGNAL(triggered()), m_mruMapper, SLOT(map()));
+		m_mruMapper->setMapping(action, fileName);
+	}
+
+	if(files.count()) {
+		m_ui->recentFilesMenu->setEnabled(true);
+		m_ui->recentFilesMenu->addSeparator();
+		m_ui->recentFilesMenu->addAction(m_ui->clearMruAction);
+	} else {
+		m_ui->recentFilesMenu->setEnabled(false);
+	}
+}
+
+void MainWindow::clearMru()
+{
+	QSettings set;
+	set.setValue("mru", QStringList());
+}
+
 void MainWindow::setStartLine(const int &lineNo)
 {
 	const QString line = m_ui->codeEdit->document()->findBlockByLineNumber(lineNo - 1).text().replace(QRegularExpression("\\s+"), " ");
@@ -382,6 +417,21 @@ bool MainWindow::saveFile(const QString &fileName)
 
 void MainWindow::setCurrentFile(const QString &fileName)
 {
+	//save mru
+	if(!fileName.isEmpty()) {
+		QSettings set;
+		QStringList files = set.value("mru").toStringList();
+
+		files.removeAll(fileName);
+		files.prepend(fileName);
+
+		while(files.size() > MaxMru)
+			files.removeLast();
+
+		set.setValue("mru", files);
+	}
+
+	//set current file
 	m_currentFile = fileName;
 
 	m_ui->codeEdit->document()->setModified(false);

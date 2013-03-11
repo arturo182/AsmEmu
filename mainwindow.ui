@@ -22,7 +22,16 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -94,8 +103,17 @@ p, li { white-space: pre-wrap; }
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="recentFilesMenu">
+     <property name="title">
+      <string>Recent &amp;files</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="clearMruAction"/>
+    </widget>
     <addaction name="newAction"/>
     <addaction name="openAction"/>
+    <addaction name="recentFilesMenu"/>
+    <addaction name="separator"/>
     <addaction name="saveAction"/>
     <addaction name="saveAsAction"/>
     <addaction name="separator"/>
@@ -189,7 +207,16 @@ p, li { white-space: pre-wrap; }
    </attribute>
    <widget class="QWidget" name="registersDockWidget">
     <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -221,7 +248,16 @@ p, li { white-space: pre-wrap; }
    </attribute>
    <widget class="QWidget" name="memoryDockWidget">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -442,6 +478,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="clearMruAction">
+   <property name="text">
+    <string>Clear file list</string>
    </property>
   </action>
  </widget>
@@ -750,6 +791,22 @@ p, li { white-space: pre-wrap; }
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>clearMruAction</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clearMru()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>365</x>
+     <y>222</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newFile()</slot>
@@ -766,5 +823,6 @@ p, li { white-space: pre-wrap; }
   <slot>changeMemorySize()</slot>
   <slot>changeLanguage()</slot>
   <slot>toggleAsmHelp()</slot>
+  <slot>clearMru()</slot>
  </slots>
 </ui>

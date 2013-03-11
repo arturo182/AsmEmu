@@ -7,6 +7,7 @@
 class QTreeWidgetItem;
 class AsmHighlighter;
 class VirtualMachine;
+class QSignalMapper;
 class QSpinBox;
 class QLabel;
 
@@ -18,6 +19,9 @@ namespace Ui
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
+
+	public:
+		enum { MaxMru = 5 };
 		
 	public:
 		explicit MainWindow(QWidget *parent = 0);
@@ -41,6 +45,8 @@ class MainWindow : public QMainWindow
 		void updateActions();
 		void updateRegisters();
 		void updateCursorPosition();
+		void updateMruMenu();
+		void clearMru();
 		void setStartLine(const int &lineNo);
 		void setStartCell(const int &cellNo);
 		void changeMemorySize();
@@ -56,8 +62,9 @@ class MainWindow : public QMainWindow
 		void setCurrentFile(const QString &fileName);
 		
 	private:
-		QMap<int, QTreeWidgetItem*> m_registerItems;
 		Ui::MainWindow *m_ui;
+		QSignalMapper *m_mruMapper;
+		QMap<int, QTreeWidgetItem*> m_registerItems;
 		AsmHighlighter *m_asmHighlighter;
 		VirtualMachine *m_virtualMachine;
 		QVector<int> m_prevRegisters;
