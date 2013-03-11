@@ -47,6 +47,9 @@ void CodeEdit::Gutter::paintEvent(QPaintEvent *event)
 
 void CodeEdit::Gutter::mousePressEvent(QMouseEvent *event)
 {
+	if(m_textEdit->isReadOnly())
+		return;
+
 	QTextBlock block = m_textEdit->firstVisibleBlock();
 	int line = qFloor(event->pos().y() / m_textEdit->fontMetrics().height()) + block.blockNumber();
 	if(!m_textEdit->m_zeroStart)
