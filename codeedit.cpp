@@ -17,7 +17,7 @@ void CodeEdit::Gutter::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
 	painter.fillRect(event->rect(), palette().color(QPalette::Window));
-	painter.setPen(Qt::darkGray);
+	painter.setPen(Qt::gray);
 
 	const int marginRight = 3;
 
@@ -35,6 +35,13 @@ void CodeEdit::Gutter::paintEvent(QPaintEvent *event)
 			if((m_textEdit->m_specialLine == number) && !m_textEdit->m_specialPixmap.isNull()) {
 				painter.drawPixmap(0, top, m_textEdit->m_specialPixmap);
 			}
+
+			const bool isCurrentLine = (m_textEdit->textCursor().block().blockNumber() == blockNumber);
+			QFont font = painter.font();
+			font.setBold(isCurrentLine);
+			painter.setFont(font);
+
+			painter.setPen(isCurrentLine ? Qt::darkGray : Qt::gray);
 
 			painter.drawText(0, top, width() - marginRight, m_textEdit->fontMetrics().height(), Qt::AlignRight, QString::number(number).rightJustified(m_textEdit->m_zeroPadding, '0'));
 		}
