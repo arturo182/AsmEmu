@@ -6,10 +6,12 @@ AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 	QSyntaxHighlighter(parent),
 	m_enabled(true)
 {
-	//the order here is important
+	const QString mnemonics = "(hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)";
+	const QString label = "[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*";
 
+	//the order here is important
 	//memory cells
-	m_rules << new HighlighterRule("\\s([0-9]+|\\[[0-9]+\\])(\\s|;|$)", Qt::red);
+	m_rules << new HighlighterRule("\\s([0-9]+|\\[([0-9]+|[-\\+\\*\\/]|"+label+"|\\s)+\\])(\\s|;|$)", Qt::red);
 
 	//const values
 	m_rules << new HighlighterRule("\\s\\$[0-9]+(\\s|;|$)", Qt::darkYellow);
@@ -18,10 +20,10 @@ AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 	m_rules << new HighlighterRule("^[0-9]+\\s", Qt::darkMagenta);
 
 	//labels
-	m_rules << new HighlighterRule("(^[a-z_][_a-z0-9]+:\\s)|((hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)\\s[a-z_][_a-z0-9]+)", QColor(250, 130, 0), QRegularExpression::CaseInsensitiveOption);
+	m_rules << new HighlighterRule("(^" + label + ":\\s?)|(" + mnemonics + "\\s+" + label + ")|" + label, QColor(250, 130, 0), QRegularExpression::CaseInsensitiveOption);
 
 	//mnemonics
-	m_rules << new HighlighterRule("\\s(hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)(\\s|;|$)", Qt::blue, QRegularExpression::CaseInsensitiveOption);
+	m_rules << new HighlighterRule("\\s?" + mnemonics + "(\\s|;|$)", Qt::blue, QRegularExpression::CaseInsensitiveOption);
 
 	//directives
 	m_rules << new HighlighterRule("^\\.(.*)$", Qt::darkGray);
