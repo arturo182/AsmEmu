@@ -224,6 +224,9 @@ p, li { white-space: pre-wrap; }
        <property name="indentation">
         <number>0</number>
        </property>
+       <property name="sortingEnabled">
+        <bool>true</bool>
+       </property>
        <column>
         <property name="text">
          <string>Name</string>
@@ -315,6 +318,9 @@ p, li { white-space: pre-wrap; }
       <widget class="QTreeWidget" name="labelsTree">
        <property name="indentation">
         <number>0</number>
+       </property>
+       <property name="sortingEnabled">
+        <bool>true</bool>
        </property>
        <column>
         <property name="text">

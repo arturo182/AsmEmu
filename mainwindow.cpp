@@ -3,6 +3,7 @@
 
 #include "asmhighlighter.h"
 #include "virtualmachine.h"
+#include "compiler.h"
 #include "contants.h"
 
 #include <QRegularExpression>
@@ -13,8 +14,34 @@
 #include <QTextStream>
 #include <QSettings>
 #include <QSpinBox>
+#include <QDebug>
 #include <QLabel>
-#include "compiler.h"
+
+class TreeItem : public QTreeWidgetItem
+{
+	public:
+		TreeItem(QTreeWidget *parent):
+			QTreeWidgetItem(parent)
+		{ }
+
+	private:
+		bool operator<(const QTreeWidgetItem &other) const
+		{
+			const int column = treeWidget()->sortColumn();
+			switch(column) {
+				case 0:
+					return text(0).toLower() < other.text(0).toLower();
+				break;
+
+				case 1:
+				case 2:
+					return text(column).toInt() < other.text(column).toInt();
+				break;
+			}
+
+			return true;
+		}
+};
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -249,7 +276,7 @@ void MainWindow::updateRegisters()
 {
 	for(int i = 0; i < m_virtualMachine->registerCount(); ++i) {
 		if(!m_registerItems.contains(i)) {
-			QTreeWidgetItem *registerItem = new QTreeWidgetItem(m_ui->registersTree);
+			TreeItem *registerItem = new TreeItem(m_ui->registersTree);
 			registerItem->setText(0, m_virtualMachine->registerName(i));
 			registerItem->setText(1, QString::number(m_virtualMachine->registers().at(i)));
 			m_registerItems.insert(i, registerItem);
@@ -266,7 +293,7 @@ void MainWindow::updateLabels()
 {
 	for(int i = 0; i < m_virtualMachine->labelCount(); ++i) {
 		if(!m_labelItems.contains(i)) {
-			QTreeWidgetItem *labelItem = new QTreeWidgetItem(m_ui->labelsTree);
+			TreeItem *labelItem = new TreeItem(m_ui->labelsTree);
 			labelItem->setText(0, m_virtualMachine->labelName(i));
 			labelItem->setText(1, QString::number(m_virtualMachine->labelCellNo(i)));
 			labelItem->setText(2, QString::number(m_virtualMachine->labels().at(i)));
