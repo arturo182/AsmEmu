@@ -3,6 +3,7 @@
 #include "asmhighlighter.h"
 
 #include <QTextBlock>
+#include <QMimeData>
 #include <QPainter>
 #include <qmath.h>
 #include <QDebug>
@@ -199,6 +200,24 @@ void CodeEdit::focusOutEvent(QFocusEvent *event)
 	QPlainTextEdit::focusOutEvent(event);
 
 	emit focusChanged(false);
+}
+
+bool CodeEdit::canInsertFromMimeData(const QMimeData *source) const
+{
+	return source->hasUrls() || QPlainTextEdit::canInsertFromMimeData(source);
+}
+
+void CodeEdit::insertFromMimeData(const QMimeData *source)
+{
+	if(source->hasUrls()) {
+		const QString fileName = source->urls().first().toLocalFile();
+		if(QFile::exists(fileName)) {
+			emit fileDropped(fileName);
+			return;
+		}
+	}
+
+	QPlainTextEdit::insertFromMimeData(source);
 }
 
 void CodeEdit::updateGutterWidth()

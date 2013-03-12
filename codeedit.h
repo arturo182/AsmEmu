@@ -53,12 +53,15 @@ class CodeEdit: public QPlainTextEdit
 
 	signals:
 		void gutterClicked(const int &line);
+		void fileDropped(const QString &fileName);
 		void focusChanged(bool focus);
 
 	protected:
 		void resizeEvent(QResizeEvent *event);
 		void focusInEvent(QFocusEvent *event);
 		void focusOutEvent(QFocusEvent *event);
+		bool canInsertFromMimeData(const QMimeData *source) const;
+		void insertFromMimeData(const QMimeData *source);
 
 	protected slots:
 		void updateGutterWidth();

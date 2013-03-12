@@ -57,6 +57,13 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_ui->codeEdit, &CodeEdit::cursorPositionChanged, this, &MainWindow::updateCursorPosition);
 	connect(m_ui->codeEdit, &CodeEdit::gutterClicked, this, &MainWindow::setStartLine);
 	connect(m_ui->codeEdit, &CodeEdit::focusChanged, this, &MainWindow::updateActions);
+	connect(m_ui->codeEdit, &CodeEdit::fileDropped, [=](const QString &fileName)
+	{
+		if(!maybeSave())
+			return;
+
+		loadFile(fileName);
+	});
 
 	updateActions();
 	updateRegisters();
