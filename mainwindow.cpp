@@ -311,7 +311,7 @@ void MainWindow::clearMru()
 	QSettings set;
 	set.setValue("mru", QStringList());
 }
-#include <QDebug>
+
 void MainWindow::setStartLine(const int &lineNo)
 {
 	Compiler compiler(m_ui->codeEdit->toPlainText());

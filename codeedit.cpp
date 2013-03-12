@@ -142,7 +142,7 @@ void CodeEdit::setSpecialLine(const int &specialLine)
 {
 	m_specialLine = specialLine;
 
-	m_gutter->repaint();
+	m_gutter->update();
 }
 
 int CodeEdit::specialLine() const
