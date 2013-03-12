@@ -417,7 +417,11 @@ void MainWindow::loadFile(const QString &fileName)
 
 bool MainWindow::saveFile(const QString &fileName)
 {
-	QFile file(fileName);
+	QFileInfo fileInfo(fileName);
+	if(fileInfo.suffix().toLower() != "asm")
+		fileInfo.setFile(fileName + ".asm");
+
+	QFile file(fileInfo.absoluteFilePath());
 	if(!file.open(QFile::WriteOnly | QFile::Text))
 		return false;
 
