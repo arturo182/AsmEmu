@@ -130,6 +130,8 @@ p, li { white-space: pre-wrap; }
     <addaction name="copyAction"/>
     <addaction name="pasteAction"/>
     <addaction name="separator"/>
+    <addaction name="selectAllAction"/>
+    <addaction name="separator"/>
     <addaction name="changeLanguageAction"/>
    </widget>
    <widget class="QMenu" name="helpMenu">
@@ -537,6 +539,14 @@ p, li { white-space: pre-wrap; }
     <string>Clear file list</string>
    </property>
   </action>
+  <action name="selectAllAction">
+   <property name="text">
+    <string>Select &amp;all</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -544,6 +554,9 @@ p, li { white-space: pre-wrap; }
    <class>CodeEdit</class>
    <extends>QPlainTextEdit</extends>
    <header>codeedit.h</header>
+   <slots>
+    <slot>toggleCommentSelection()</slot>
+   </slots>
   </customwidget>
   <customwidget>
    <class>MemoryView</class>
@@ -856,6 +869,22 @@ p, li { white-space: pre-wrap; }
     <hint type="destinationlabel">
      <x>365</x>
      <y>222</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>selectAllAction</sender>
+   <signal>triggered()</signal>
+   <receiver>codeEdit</receiver>
+   <slot>selectAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>375</x>
+     <y>235</y>
     </hint>
    </hints>
   </connection>
