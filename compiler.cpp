@@ -21,6 +21,9 @@ Compiler::Compiler(const QString &code)
 {
 	m_lines = code.split('\n', QString::KeepEmptyParts);
 
+	const QRegularExpression labelPattern("^\\s?([a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*:)\\s?$", QRegularExpression::CaseInsensitiveOption);
+
+
 	for(int i = 0; i < m_lines.size(); ++i) {
 		//strip comments
 		m_lines[i].replace(QRegularExpression(";(.*)$"), "");
@@ -28,6 +31,12 @@ Compiler::Compiler(const QString &code)
 		//trim whitespace
 		m_lines[i].replace(QRegularExpression("\\s+"), " ");
 		m_lines[i] = m_lines[i].trimmed();
+
+		//move single labels to next lines
+		QRegularExpressionMatch labelMatch = labelPattern.match(m_lines[i]);
+		if(labelMatch.hasMatch() && i < m_lines.size()) {
+			m_lines[i + 1].prepend(labelMatch.captured(1) + " ");
+		}
 	}
 }
 
@@ -498,6 +507,7 @@ bool Compiler::compile()
 			/* 1 part is
 			 * - (sequential) mnemonic (HLT)
 			 * - (sequential) value
+			 * - label:
 			 */
 
 			bool isNumber = false;
@@ -513,6 +523,9 @@ bool Compiler::compile()
 				m_lineMap.insert(i + 1, codeStart);
 
 				++codeStart;
+			} else if(parts[0].contains(':')) {
+				//label
+				m_lineMap.insert(i + 1, codeStart);
 			}
 		}
 	}
