@@ -74,42 +74,19 @@ bool VirtualMachine::exec()
 	bool isConst = false;
 
 	if(kilo == 0) {
-		if(hecto == 0) {
-			instr = HLT;
-		} else if(hecto == 1) {
-			instr = INC;
-			value = decaValue;
-		} else if(hecto == 2) {
-			instr = DEC;
-			value = decaValue;
-		}
-	} else if(kilo == 1) {
-		instr = CPA;
-		value = hectoValue;
-	} else if(kilo == 2) {
-		instr = STO;
-		value = hectoValue;
-	} else if(kilo == 3) {
-		instr = ADD;
-		value = hectoValue;
-	} else if(kilo == 4) {
-		instr = SUB;
-		value = hectoValue;
-	} else if(kilo == 5) {
-		instr = BRA;
-		value = hectoValue;
-	} else if(kilo == 6) {
-		instr = BRN;
-		value = hectoValue;
-	} else if(kilo == 7) {
-		instr = MUL;
-		value = hectoValue;
-	} else if(kilo == 8) {
-		instr = BRZ;
+		static QList<Instruction> k0List = { HLT, INC, DEC };
+
+		instr = k0List[hecto];
+		value = decaValue;
+	} else if(kilo >= 1 && kilo <= 8) {
+		static QList<Instruction> k18List = { HLT, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ };
+
+		instr = k18List[kilo];
 		value = hectoValue;
 	} else if(kilo == 9) {
-		static QList<Instruction> instrList = { INC, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ, DEC };
-		instr = instrList[deca];
+		static QList<Instruction> k9List = { INC, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ, DEC };
+
+		instr = k9List[deca];
 
 		if(hecto == 0) {
 			++m_execCell;

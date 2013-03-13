@@ -61,7 +61,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 
 	const bool isConst = strValue.contains('$');
 	const bool isAddress = strValue.contains('[');
-	const int value =  QString(strValue).remove(QRegularExpression("\\$|\\[|\\]")).toInt();
+	const int value = QString(strValue).remove(QRegularExpression("\\$|\\[|\\]")).toInt();
 
 	switch(instr) {
 		case VirtualMachine::HLT:
@@ -72,50 +72,34 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 		break;
 
 		case VirtualMachine::INC:
-		{
-			if(isConst) {
-				return 0;
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9300 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9400);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 100) {
-					emit memoryChanged(cellNo, 100 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9000);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::DEC:
 		{
+			const QList<int> varList = {
+				9300, 9390,
+				9400, 9490,
+				 100,  200,
+				9000, 9010
+			};
+
+			const int diff = instr - VirtualMachine::INC;
+
 			if(isConst) {
 				return 0;
 			} else if(isAddress) {
 				if(value < 10) {
-					emit memoryChanged(cellNo, 9390 + value);
+					emit memoryChanged(cellNo, varList[0 + diff] + value);
 					return 1;
 				} else {
-					emit memoryChanged(cellNo, 9490);
+					emit memoryChanged(cellNo, varList[2 + diff]);
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
 			} else {
 				if(value < 100) {
-					emit memoryChanged(cellNo, 200 + value);
+					emit memoryChanged(cellNo, varList[4 + diff] + value);
 					return 1;
 				} else {
-					emit memoryChanged(cellNo, 9010);
+					emit memoryChanged(cellNo, varList[6 + diff]);
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
@@ -124,262 +108,50 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 		break;
 
 		case VirtualMachine::CPA:
-		{
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9110 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9210);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9310 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9410);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, 1000 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9010);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::STO:
-		{
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9120 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9220);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9320 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9420);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, 2000 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9020);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::ADD:
-		{
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9130 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9210);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9330 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9430);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, 3000 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9030);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::SUB:
-		{
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9140 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9240);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9340 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9440);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, 4000 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9040);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::BRA:
-		{
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9150 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9250);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9350 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9450);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, 5000 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9050);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::BRN:
-		{
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9160 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9260);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9360 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9460);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, 6000 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9060);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::MUL:
-		{
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9170 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9270);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isAddress) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, 9370 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9470);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, 7000 + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, 9070);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
 		case VirtualMachine::BRZ:
 		{
+			const QList<int> varList = {
+			//	CPA   STO   ADD   SUB   BRA   BRN   MUL   BRZ
+				9110, 9120, 9130, 9140, 9150, 9160, 9170, 9180, // const < 10
+				9210, 9220, 9210, 9240, 9250, 9260, 9270, 9280, // const >= 10
+				9310, 9320, 9330, 9340, 9350, 9360, 9370, 9380, // pointer < 10
+				9410, 9420, 9430, 9440, 9450, 9460, 9470, 9480, // pointer >= 10
+				1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, // value < 1000
+				9010, 9020, 9030, 9040, 9050, 9060, 9070, 9080  // value >= 1000
+			};
+
+			const int diff = instr - VirtualMachine::CPA;
+
 			if(isConst) {
 				if(value < 10) {
-					emit memoryChanged(cellNo, 9180 + value);
+					emit memoryChanged(cellNo, varList[0 + diff] + value);
 					return 1;
 				} else {
-					emit memoryChanged(cellNo, 9280);
+					emit memoryChanged(cellNo, varList[8 + diff]);
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
 			} else if(isAddress) {
 				if(value < 10) {
-					emit memoryChanged(cellNo, 9380 + value);
+					emit memoryChanged(cellNo, varList[16 + diff] + value);
 					return 1;
 				} else {
-					emit memoryChanged(cellNo, 9480);
+					emit memoryChanged(cellNo, varList[24 + diff]);
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
 			} else {
 				if(value < 1000) {
-					emit memoryChanged(cellNo, 8000 + value);
+					emit memoryChanged(cellNo, varList[32 + diff] + value);
 					return 1;
 				} else {
-					emit memoryChanged(cellNo, 9080);
+					emit memoryChanged(cellNo, varList[40 + diff]);
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
