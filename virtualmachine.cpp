@@ -20,7 +20,12 @@ int VirtualMachine::memoryToInt(const int &mem)
 
 int VirtualMachine::intToMemory(const int &val)
 {
-	const int bounded = qBound(-999, val, 999);
+	int bounded = val;
+	if(bounded > 999)
+		bounded -= 999;
+
+	if(bounded < -999)
+		bounded += 999;
 
 	return(bounded >= 0) ? bounded : -bounded + 1000;
 }
