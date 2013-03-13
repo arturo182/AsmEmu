@@ -6,17 +6,21 @@
 #include <QRegularExpression>
 #include <QDebug>
 
-const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, VirtualMachine::Instruction>({{"HLT", VirtualMachine::HLT},
-																											 {"INC", VirtualMachine::INC},
-																											 {"DEC", VirtualMachine::DEC},
-																											 {"CPA", VirtualMachine::CPA},
-																											 {"STO", VirtualMachine::STO},
-																											 {"ADD", VirtualMachine::ADD},
-																											 {"SUB", VirtualMachine::SUB},
-																											 {"BRA", VirtualMachine::BRA},
-																											 {"BRN", VirtualMachine::BRN},
-																											 {"MUL", VirtualMachine::MUL},
-																											 {"BRZ", VirtualMachine::BRZ}}));
+const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, VirtualMachine::Instruction>({
+																												{"HLT", VirtualMachine::HLT},
+																												{"INC", VirtualMachine::INC},
+																												{"DEC", VirtualMachine::DEC},
+																												{"CPA", VirtualMachine::CPA},
+																												{"STO", VirtualMachine::STO},
+																												{"ADD", VirtualMachine::ADD},
+																												{"SUB", VirtualMachine::SUB},
+																												{"BRA", VirtualMachine::BRA},
+																												{"BRN", VirtualMachine::BRN},
+																												{"MUL", VirtualMachine::MUL},
+																												{"BRZ", VirtualMachine::BRZ},
+																												{"POP", VirtualMachine::POP},
+																												{"PUSH", VirtualMachine::PUSH}
+																											}));
 
 
 bool isValidLabel(const QString &label)
@@ -91,6 +95,20 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 		case VirtualMachine::HLT:
 		{
 			emit memoryChanged(cellNo, VirtualMachine::intToMemory(0));
+			return 1;
+		}
+		break;
+
+		case VirtualMachine::POP:
+		{
+			emit memoryChanged(cellNo, VirtualMachine::intToMemory(300));
+			return 1;
+		}
+		break;
+
+		case VirtualMachine::PUSH:
+		{
+			emit memoryChanged(cellNo, VirtualMachine::intToMemory(400));
 			return 1;
 		}
 		break;
@@ -276,15 +294,16 @@ bool Compiler::compile()
 					emit memoryChanged(dataStart, value);
 					++dataStart;
 				} else {
-					//labeled HLT
+					//labeled mnemonic
 
 					if(!isValidLabel(label))
 						return false;
 
 					m_lineMap.insert(i + 1, codeStart);
 					m_labelMap.insert(label, codeStart);
-					emit memoryChanged(codeStart, 0);
-					++codeStart;
+
+					const int size = assembleInstruction(codeStart, parts[1], 0);
+					codeStart += size;
 				}
 			} else {
 				bool hasCellNumber = false;
@@ -300,10 +319,11 @@ bool Compiler::compile()
 						//memory value
 						emit memoryChanged(cellNumber, value);
 						dataStart = cellNumber + 1;
-					} else if(parts[1].toLower() == "hlt") {
-						//a HLT mnemonic
-						emit memoryChanged(cellNumber, VirtualMachine::intToMemory(0));
-						codeStart = cellNumber + 1;
+					} else {
+						//a mnemonic
+
+						const int size = assembleInstruction(cellNumber, parts[1], 0);
+						codeStart = cellNumber + size;
 					}
 
 					m_lineMap.insert(i + 1, cellNumber);
@@ -325,7 +345,7 @@ bool Compiler::compile()
 			}
 		} else if(parts.size() == 1) {
 			/* 1 part is
-			 * - (sequential) mnemonic (HLT)
+			 * - (sequential) mnemonic
 			 * - (sequential) value
 			 * - label:
 			 */
@@ -337,15 +357,16 @@ bool Compiler::compile()
 				//sequential memory value
 				emit memoryChanged(dataStart, value);
 				++dataStart;
-			} else if(parts[0].toLower() == "hlt") {
-				//a HLT mnemonic
-				emit memoryChanged(codeStart, VirtualMachine::intToMemory(0));
-				m_lineMap.insert(i + 1, codeStart);
-
-				++codeStart;
 			} else if(parts[0].contains(':')) {
 				//label
 				m_lineMap.insert(i + 1, codeStart);
+			} else {
+				//(sequential) mnemonic
+
+				m_lineMap.insert(i + 1, codeStart);
+
+				const int size = assembleInstruction(codeStart, parts[0], 0);
+				codeStart += size;
 			}
 		}
 	}

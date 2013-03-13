@@ -38,7 +38,9 @@ class VirtualMachine : public QObject
 			BRA,
 			BRN,
 			MUL,
-			BRZ
+			BRZ,
+			POP,
+			PUSH
 		};
 
 	public:

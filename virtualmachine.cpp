@@ -67,13 +67,16 @@ bool VirtualMachine::exec()
 
 	m_registers[SB] = m_memory.size() - 1;
 
+	if(m_registers[SP] == 0)
+		m_registers[SP] = m_registers[SB];
+
 	const int kilo = m_memory[m_execCell] / 1000;
 	const int hecto = m_memory[m_execCell] / 100 % 10;
 	const int deca = m_memory[m_execCell] / 10 % 10;
 
-	const int hectoValue = m_memory[m_execCell] - kilo * 1000;
-	const int decaValue = hectoValue - hecto * 100;
-	const int oneValue = decaValue - 10 * deca;
+	const int v100 = m_memory[m_execCell] - kilo * 1000;
+	const int v10 = v100 - hecto * 100;
+	const int v1 = v10 - 10 * deca;
 
 	int value = -1;
 
@@ -82,15 +85,15 @@ bool VirtualMachine::exec()
 	bool theEnd = false;
 
 	if(kilo == 0) {
-		static QList<Instruction> k0List = { HLT, INC, DEC };
+		static QList<Instruction> k0List = { HLT, INC, DEC, POP, PUSH };
 
 		instr = k0List.value(hecto);
-		value = decaValue;
+		value = v10;
 	} else if(kilo >= 1 && kilo <= 8) {
 		static QList<Instruction> k18List = { HLT, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ };
 
 		instr = k18List.value(kilo);
-		value = hectoValue;
+		value = v100;
 	} else if(kilo == 9) {
 		static QList<Instruction> k9List = { INC, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ, DEC };
 
@@ -101,13 +104,13 @@ bool VirtualMachine::exec()
 			value = m_memory[m_execCell];
 		} else if(hecto == 1) {
 			isConst = true;
-			value = oneValue;
+			value = v1;
 		} else if(hecto == 2) {
 			isConst = true;
 			++m_execCell;
 			value = m_memory[m_execCell];
 		} else if(hecto == 3) {
-			value = m_memory.value(oneValue);
+			value = m_memory.value(v1);
 		} else if(hecto == 4) {
 			++m_execCell;
 			value = memoryToInt(m_memory[m_execCell]);
@@ -210,6 +213,30 @@ bool VirtualMachine::exec()
 
 				updateFlags(intVal);
 			}
+
+			++m_execCell;
+		}
+		break;
+
+		case POP:
+		{
+			if(m_registers[SP] != m_registers[SB])
+				m_registers[SP] = intToMemory(memoryToInt(m_registers[SP]) + 1);
+
+			const int intVal = memoryToInt(m_registers[SP]);
+			m_registers[AX] = m_memory[intVal];
+
+			++m_execCell;
+		}
+		break;
+
+		case PUSH:
+		{
+			const int stackPos = memoryToInt(m_registers[SP]);
+			const int intVal = memoryToInt(m_registers[AX]);
+			m_memory[stackPos] = intVal;
+
+			m_registers[SP] = intToMemory(stackPos - 1);
 
 			++m_execCell;
 		}
