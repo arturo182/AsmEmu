@@ -12,7 +12,18 @@ class VirtualMachine : public QObject
 	public:
 		enum Register
 		{
-			ACU = 0
+			AX = 0,
+			SP,
+			SB,
+			IP,
+			FLAGS
+		};
+
+		enum Flags
+		{
+			ZF = 1,
+			NF = 10,
+			OF = 100
 		};
 
 		enum Instruction
@@ -70,6 +81,9 @@ class VirtualMachine : public QObject
 		void memoryChanged(const QVector<int> &memory);
 		void registersChanged(const QVector<int> &registers);
 		void labelsChanged();
+
+	private:
+		void updateFlags(const int &intVal);
 
 	private:
 		QMap<QString, int> m_labels;

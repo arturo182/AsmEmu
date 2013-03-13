@@ -30,7 +30,7 @@ VirtualMachine::VirtualMachine(QObject *parent) :
 	m_execCell(0)
 {
 	setMemorySize(100);
-	setRegisterCount(1);
+	setRegisterCount(5);
 }
 
 void VirtualMachine::assemble(const QString &code)
@@ -60,6 +60,8 @@ bool VirtualMachine::exec()
 	if((m_execCell > m_memory.size()) || (m_execCell < 0))
 		return false;
 
+	m_registers[SB] = m_memory.size() - 1;
+
 	const int kilo = m_memory[m_execCell] / 1000;
 	const int hecto = m_memory[m_execCell] / 100 % 10;
 	const int deca = m_memory[m_execCell] / 10 % 10;
@@ -72,21 +74,22 @@ bool VirtualMachine::exec()
 
 	Instruction instr = HLT;
 	bool isConst = false;
+	bool theEnd = false;
 
 	if(kilo == 0) {
 		static QList<Instruction> k0List = { HLT, INC, DEC };
 
-		instr = k0List[hecto];
+		instr = k0List.value(hecto);
 		value = decaValue;
 	} else if(kilo >= 1 && kilo <= 8) {
 		static QList<Instruction> k18List = { HLT, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ };
 
-		instr = k18List[kilo];
+		instr = k18List.value(kilo);
 		value = hectoValue;
 	} else if(kilo == 9) {
 		static QList<Instruction> k9List = { INC, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ, DEC };
 
-		instr = k9List[deca];
+		instr = k9List.value(deca);
 
 		if(hecto == 0) {
 			++m_execCell;
@@ -110,30 +113,34 @@ bool VirtualMachine::exec()
 	switch(instr) {
 		case CPA:
 		{
-			m_registers[ACU] = isConst ? value : m_memory[value];
+			m_registers[AX] = isConst ? value : m_memory[value];
 			++m_execCell;
 		}
 		break;
 
 		case STO:
 		{
-			m_memory[value] = m_registers[ACU];
+			m_memory[value] = m_registers[AX];
 			++m_execCell;
 		}
 		break;
 
 		case ADD:
 		{
-			const int result = memoryToInt(m_registers[ACU]) + memoryToInt(isConst ? value : m_memory[value]);
-			m_registers[ACU] = intToMemory(result);
+			const int intVal = memoryToInt(m_registers[AX]) + memoryToInt(isConst ? value : m_memory[value]);
+			m_registers[AX] = intToMemory(intVal);
+
+			updateFlags(intVal);
 			++m_execCell;
 		}
 		break;
 
 		case SUB:
 		{
-			const int result = memoryToInt(m_registers[ACU]) - memoryToInt(isConst ? value : m_memory[value]);
-			m_registers[ACU] = intToMemory(result);
+			const int intVal = memoryToInt(m_registers[AX]) - memoryToInt(isConst ? value : m_memory[value]);
+			m_registers[AX] = intToMemory(intVal);
+
+			updateFlags(intVal);
 			++m_execCell;
 		}
 		break;
@@ -146,7 +153,7 @@ bool VirtualMachine::exec()
 
 		case BRN:
 		{
-			if(memoryToInt(m_registers[ACU]) < 0) {
+			if(memoryToInt(m_registers[AX]) < 0) {
 				m_execCell = value;
 			} else {
 				++m_execCell;
@@ -156,15 +163,17 @@ bool VirtualMachine::exec()
 
 		case MUL:
 		{
-			const int result = memoryToInt(m_registers[ACU]) * memoryToInt(isConst ? value : m_memory[value]);
-			m_registers[ACU] = intToMemory(result);
+			const int intVal = memoryToInt(m_registers[AX]) * memoryToInt(isConst ? value : m_memory[value]);
+			m_registers[AX] = intToMemory(intVal);
+
+			updateFlags(intVal);
 			++m_execCell;
 		}
 		break;
 
 		case BRZ:
 		{
-			if(memoryToInt(m_registers[ACU]) == 0) {
+			if(memoryToInt(m_registers[AX]) == 0) {
 				m_execCell = value;
 			} else {
 				++m_execCell;
@@ -174,8 +183,12 @@ bool VirtualMachine::exec()
 
 		case INC:
 		{
-			if(value > -1)
-				m_memory[value] = intToMemory(memoryToInt(m_memory[value]) + 1);
+			if(value > -1) {
+				const int intVal = memoryToInt(m_memory[value]) + 1;
+				m_memory[value] = intToMemory(intVal);
+
+				updateFlags(intVal);
+			}
 
 			++m_execCell;
 		}
@@ -183,8 +196,12 @@ bool VirtualMachine::exec()
 
 		case DEC:
 		{
-			if(value > -1)
-				m_memory[value] = intToMemory(memoryToInt(m_memory[value]) - 1);
+			if(value > -1) {
+				const int intVal = memoryToInt(m_memory[value]) - 1;
+				m_memory[value] = intToMemory(intVal);
+
+				updateFlags(intVal);
+			}
 
 			++m_execCell;
 		}
@@ -192,8 +209,13 @@ bool VirtualMachine::exec()
 
 		case HLT: //HLT
 		default:
-			return false;
+			++m_execCell;
+			theEnd = true;
+		break;
 	}
+
+	//set instruction pointer
+	m_registers[IP] = m_execCell;
 
 	emit memoryChanged(m_memory);
 	emit registersChanged(m_registers);
@@ -202,7 +224,7 @@ bool VirtualMachine::exec()
 	if(m_execCell > m_memory.size())
 		return false;
 
-	return true;
+	return !theEnd;
 }
 
 const QVector<int> &VirtualMachine::memory() const
@@ -253,12 +275,28 @@ void VirtualMachine::setRegisters(const QVector<int> &registers)
 QString VirtualMachine::registerName(const int &registerNo) const
 {
 	switch(registerNo) {
-		case 0:
-		return "ACU";
+		case AX:
+			return "AX";
+		break;
+
+		case SP:
+			return "SP";
+		break;
+
+		case SB:
+			return "SB";
+		break;
+
+		case IP:
+			return "IP";
+		break;
+
+		case FLAGS:
+			return "FLAGS";
 		break;
 
 		default:
-		return tr("Unknown");
+			return tr("Unknown");
 	}
 }
 
@@ -326,4 +364,20 @@ void VirtualMachine::resetMemory()
 		m_memory[i] = 0;
 
 	emit memoryChanged(m_memory);
+}
+
+void VirtualMachine::updateFlags(const int &intVal)
+{
+	const int zeroFlag = m_registers[FLAGS] / ZF % 10;
+	const bool isZero = (intVal == 0);
+	m_registers[FLAGS] += (isZero && !zeroFlag) ? ZF : ((!isZero && zeroFlag) ? -ZF : 0);
+
+	const int negativeFlag = m_registers[FLAGS] / NF % 10;
+	const bool isNegative = (intVal < 0);
+	m_registers[FLAGS] += (isNegative && !negativeFlag) ? NF : ((!isNegative && negativeFlag) ? -NF : 0);
+
+	const int overflowFlag = m_registers[FLAGS] / OF % 10;
+	const bool isOverflowed = (intVal > 999 || intVal < -999);
+	m_registers[FLAGS] += (isOverflowed && !overflowFlag) ? OF : ((!isOverflowed && overflowFlag) ? -OF : 0);
+
 }
