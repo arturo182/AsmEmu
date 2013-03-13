@@ -49,7 +49,6 @@ class VirtualMachine : public QObject
 		explicit VirtualMachine(QObject *parent = 0);
 
 		void assemble(const QString &code);
-		int assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue);
 		bool exec();
 
 		const QVector<int> &memory() const;
