@@ -28,7 +28,7 @@ start:		CPA varX
 		STO wykladnik
 		BRA potegaStart
 loop:		CPA wynik
-		MUL [4]
+		MUL [wsp]
 		INC wsp
 		INC wyk
 		ADD superWynik
@@ -37,7 +37,7 @@ loop:		CPA wynik
 		CPA licznik
 		BRN koniec
 		BRA start
-koniec:		CPA [4]
+koniec:		CPA [wsp]
 		ADD superWynik
 		STO superWynik
 		HLT
