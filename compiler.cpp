@@ -34,7 +34,7 @@ Compiler::Compiler(const QString &code)
 
 		//move single labels to next lines
 		QRegularExpressionMatch labelMatch = labelPattern.match(m_lines[i]);
-		if(labelMatch.hasMatch() && i < m_lines.size()) {
+		if(labelMatch.hasMatch() && i < m_lines.size() - 1) {
 			m_lines[i + 1].prepend(labelMatch.captured(1) + " ");
 		}
 	}
