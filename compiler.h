@@ -23,6 +23,7 @@ class Compiler : public QObject
 
 	private:
 		int assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue);
+		int evalExpression(const QString &expr);
 
 	private:
 		QMap<QString, int> m_labelMap;

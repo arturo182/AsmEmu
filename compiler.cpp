@@ -1,8 +1,10 @@
 #include "compiler.h"
 
 #include "virtualmachine.h"
+#include "evaluator.h"
 
 #include <QRegularExpression>
+#include <QDebug>
 
 const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, VirtualMachine::Instruction>({{"HLT", VirtualMachine::HLT},
 																											 {"INC", VirtualMachine::INC},
@@ -17,12 +19,26 @@ const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, V
 																											 {"BRZ", VirtualMachine::BRZ}}));
 
 
+bool isValidLabel(const QString &label)
+{
+	static QStringList keywords = {
+		"AX", "SP", "SB", "IP", "FLAGS",			//registers
+		"HLT", "INC", "DEC", "CPA", "STO", "ADD",	//mnemonics
+		"SUB", "BRA", "BRN", "MUL", "BRZ"
+	};
+
+	if(keywords.contains(label.toUpper()))
+		return false;
+
+	return true;
+}
+
 Compiler::Compiler(const QString &code)
 {
 	m_lines = code.split('\n', QString::KeepEmptyParts);
 
 	const QRegularExpression labelPattern("^\\s?([a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*:)\\s?$", QRegularExpression::CaseInsensitiveOption);
-
+	const QRegularExpression pointerPattern("\\[.*\\]");
 
 	for(int i = 0; i < m_lines.size(); ++i) {
 		//strip comments
@@ -32,11 +48,17 @@ Compiler::Compiler(const QString &code)
 		m_lines[i].replace(QRegularExpression("\\s+"), " ");
 		m_lines[i] = m_lines[i].trimmed();
 
+		//remove whitespace in pointer expressions
+		QRegularExpressionMatch pointerMatch = pointerPattern.match(m_lines[i]);
+		if(pointerMatch.hasMatch()) {
+			const QString cleared = pointerMatch.captured().remove(QRegularExpression("\\s+"));
+			m_lines[i].replace(pointerMatch.captured(), cleared);
+		}
+
 		//move single labels to next lines
 		QRegularExpressionMatch labelMatch = labelPattern.match(m_lines[i]);
-		if(labelMatch.hasMatch() && i < m_lines.size() - 1) {
+		if(labelMatch.hasMatch() && i < m_lines.size() - 1)
 			m_lines[i + 1].prepend(labelMatch.captured(1) + " ");
-		}
 	}
 }
 
@@ -60,8 +82,10 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 	VirtualMachine::Instruction instr = mnemonicMap.value(mnemonic.toUpper());
 
 	const bool isConst = strValue.contains('$');
-	const bool isAddress = strValue.contains('[');
-	const int value = QString(strValue).remove(QRegularExpression("\\$|\\[|\\]")).toInt();
+	const bool isPointer = strValue.contains('[');
+	int value = QString(strValue).remove(QRegularExpression("\\$|\\[|\\]")).toInt();
+	if(isPointer)
+		value = evalExpression(QString(strValue).remove(QRegularExpression("\\[|\\]")));
 
 	switch(instr) {
 		case VirtualMachine::HLT:
@@ -77,7 +101,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 			const QList<int> varList = {
 				9300, 9390,
 				9400, 9490,
-				 100,  200,
+				100,  200,
 				9000, 9010
 			};
 
@@ -85,7 +109,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 
 			if(isConst) {
 				return 0;
-			} else if(isAddress) {
+			} else if(isPointer) {
 				if(value < 10) {
 					emit memoryChanged(cellNo, varList[0 + diff] + value);
 					return 1;
@@ -137,7 +161,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
-			} else if(isAddress) {
+			} else if(isPointer) {
 				if(value < 10) {
 					emit memoryChanged(cellNo, varList[16 + diff] + value);
 					return 1;
@@ -163,6 +187,21 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 	return 0;
 }
 
+int Compiler::evalExpression(const QString &expr)
+{
+	QString result = expr;
+	QMapIterator<QString, int> it(m_labelMap);
+	while(it.hasNext()) {
+		it.next();
+		result.replace(QRegularExpression("\\b" + it.key() + "\\b"), QString::number(it.value()));
+	}
+
+	result.remove('$');
+
+	Evaluator evaluator;
+	return evaluator.eval(result);
+}
+
 bool Compiler::compile()
 {
 	int dataStart = 0;
@@ -185,6 +224,9 @@ bool Compiler::compile()
 			//labeled instruction
 			if(parts[0].contains(':')) {
 				const QString label = parts[0].left(parts[0].size() - 1);
+
+				if(!isValidLabel(label))
+					return false;
 
 				m_labelMap.insert(label, codeStart);
 				cellNumber = codeStart;
@@ -226,12 +268,18 @@ bool Compiler::compile()
 				if(isNumber) {
 					//variable definition
 
+					if(!isValidLabel(label))
+						return false;
+
 					m_lineMap.insert(i + 1, dataStart);
 					m_labelMap.insert(label, dataStart);
 					emit memoryChanged(dataStart, value);
 					++dataStart;
 				} else {
 					//labeled HLT
+
+					if(!isValidLabel(label))
+						return false;
 
 					m_lineMap.insert(i + 1, codeStart);
 					m_labelMap.insert(label, codeStart);

@@ -13,7 +13,8 @@ SOURCES  += main.cpp \
             codeedit.cpp \
             memoryview.cpp \
             virtualmachine.cpp \
-            compiler.cpp
+            compiler.cpp \
+    evaluator.cpp
 
 HEADERS  += mainwindow.h \
             asmhighlighter.h \
@@ -21,7 +22,8 @@ HEADERS  += mainwindow.h \
             memoryview.h \
             virtualmachine.h \
             contants.h \
-            compiler.h
+            compiler.h \
+    evaluator.h
 
 FORMS     = mainwindow.ui
 
