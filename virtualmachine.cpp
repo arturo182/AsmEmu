@@ -62,7 +62,7 @@ void VirtualMachine::assemble(const QString &code)
  */
 bool VirtualMachine::exec()
 {
-	if((m_execCell > m_memory.size()) || (m_execCell < 0))
+	if((m_execCell > m_memory.size() - 1) || (m_execCell < 0))
 		return false;
 
 	m_registers[SB] = m_memory.size() - 1;
@@ -107,24 +107,27 @@ bool VirtualMachine::exec()
 			++m_execCell;
 			value = m_memory[m_execCell];
 		} else if(hecto == 3) {
-			value = m_memory[oneValue];
+			value = m_memory.value(oneValue);
 		} else if(hecto == 4) {
 			++m_execCell;
 			value = memoryToInt(m_memory[m_execCell]);
-			value = m_memory[value];
+			value = m_memory.value(value);
 		}
 	}
 
 	switch(instr) {
 		case CPA:
 		{
-			m_registers[AX] = isConst ? value : m_memory[value];
+			m_registers[AX] = isConst ? value : m_memory.value(value);
 			++m_execCell;
 		}
 		break;
 
 		case STO:
 		{
+			if(value > m_memory.size() - 1)
+				return false;
+
 			m_memory[value] = m_registers[AX];
 			++m_execCell;
 		}
@@ -132,7 +135,7 @@ bool VirtualMachine::exec()
 
 		case ADD:
 		{
-			const int intVal = memoryToInt(m_registers[AX]) + memoryToInt(isConst ? value : m_memory[value]);
+			const int intVal = memoryToInt(m_registers[AX]) + memoryToInt(isConst ? value : m_memory.value(value));
 			m_registers[AX] = intToMemory(intVal);
 
 			updateFlags(intVal);
@@ -142,7 +145,7 @@ bool VirtualMachine::exec()
 
 		case SUB:
 		{
-			const int intVal = memoryToInt(m_registers[AX]) - memoryToInt(isConst ? value : m_memory[value]);
+			const int intVal = memoryToInt(m_registers[AX]) - memoryToInt(isConst ? value : m_memory.value(value));
 			m_registers[AX] = intToMemory(intVal);
 
 			updateFlags(intVal);
@@ -168,7 +171,7 @@ bool VirtualMachine::exec()
 
 		case MUL:
 		{
-			const int intVal = memoryToInt(m_registers[AX]) * memoryToInt(isConst ? value : m_memory[value]);
+			const int intVal = memoryToInt(m_registers[AX]) * memoryToInt(isConst ? value : m_memory.value(value));
 			m_registers[AX] = intToMemory(intVal);
 
 			updateFlags(intVal);
@@ -189,7 +192,7 @@ bool VirtualMachine::exec()
 		case INC:
 		{
 			if(value > -1) {
-				const int intVal = memoryToInt(m_memory[value]) + 1;
+				const int intVal = memoryToInt(m_memory.value(value)) + 1;
 				m_memory[value] = intToMemory(intVal);
 
 				updateFlags(intVal);
@@ -202,7 +205,7 @@ bool VirtualMachine::exec()
 		case DEC:
 		{
 			if(value > -1) {
-				const int intVal = memoryToInt(m_memory[value]) - 1;
+				const int intVal = memoryToInt(m_memory.value(value)) - 1;
 				m_memory[value] = intToMemory(intVal);
 
 				updateFlags(intVal);
@@ -226,7 +229,7 @@ bool VirtualMachine::exec()
 	emit registersChanged(m_registers);
 	emit labelsChanged();
 
-	if(m_execCell > m_memory.size())
+	if(m_execCell > m_memory.size() - 1)
 		return false;
 
 	return !theEnd;
