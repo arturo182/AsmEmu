@@ -6,7 +6,7 @@ AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 	QSyntaxHighlighter(parent),
 	m_enabled(true)
 {
-	const QString mnemonics = "(hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec)";
+	const QString mnemonics = "(hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec|pop|push|call|ret)";
 	const QString label = "[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*";
 
 	//the order here is important
