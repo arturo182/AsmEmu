@@ -1,5 +1,6 @@
 #include "memoryview.h"
 
+#include <QScrollBar>
 #include <QDebug>
 
 MemoryView::MemoryView(QWidget *parent) :
@@ -24,6 +25,8 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 		return;
 
 	CodeEdit::resizeEvent(event);
+
+	const int yPos = verticalScrollBar()->value();
 
 	if(!m_memory.size())
 		return;
@@ -60,6 +63,8 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 		clear();
 		setPlainText(content);
 	}
+
+	verticalScrollBar()->setValue(yPos);
 
 	m_updating = false;
 }

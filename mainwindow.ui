@@ -229,6 +229,9 @@ p, li { white-space: pre-wrap; }
        <property name="sortingEnabled">
         <bool>true</bool>
        </property>
+       <attribute name="headerStretchLastSection">
+        <bool>false</bool>
+       </attribute>
        <column>
         <property name="text">
          <string>Name</string>
@@ -324,6 +327,9 @@ p, li { white-space: pre-wrap; }
        <property name="sortingEnabled">
         <bool>true</bool>
        </property>
+       <attribute name="headerStretchLastSection">
+        <bool>false</bool>
+       </attribute>
        <column>
         <property name="text">
          <string>Name</string>
