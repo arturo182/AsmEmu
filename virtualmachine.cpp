@@ -85,7 +85,7 @@ bool VirtualMachine::exec()
 	bool theEnd = false;
 
 	if(kilo == 0) {
-		static QList<Instruction> k0List = { HLT, INC, DEC, POP, PUSH };
+		static QList<Instruction> k0List = { HLT, INC, DEC, POP, PUSH, CALL, RET };
 
 		instr = k0List.value(hecto);
 		value = v10;
@@ -115,6 +115,17 @@ bool VirtualMachine::exec()
 			++m_execCell;
 			value = memoryToInt(m_memory[m_execCell]);
 			value = m_memory.value(value);
+		} else if(hecto == 5) {
+			if(deca == 0) {
+				value = m_memory.value(v1);
+			} else if(deca == 1) {
+				++m_execCell;
+				value = memoryToInt(m_memory[m_execCell]);
+				value = m_memory.value(value);
+			} else if(deca == 2) {
+				++m_execCell;
+				value = m_memory[m_execCell];
+			}
 		}
 	}
 
@@ -233,12 +244,32 @@ bool VirtualMachine::exec()
 		case PUSH:
 		{
 			const int stackPos = memoryToInt(m_registers[SP]);
-			const int intVal = memoryToInt(m_registers[AX]);
-			m_memory[stackPos] = intVal;
+			m_memory[stackPos] = m_registers[AX];
 
 			m_registers[SP] = intToMemory(stackPos - 1);
 
 			++m_execCell;
+		}
+		break;
+
+		case CALL:
+		{
+			const int stackPos = memoryToInt(m_registers[SP]);
+			m_memory[stackPos] = intToMemory(m_execCell + 1);
+
+			m_registers[SP] = intToMemory(stackPos - 1);
+
+			m_execCell = value;
+		}
+		break;
+
+		case RET:
+		{
+			if(m_registers[SP] != m_registers[SB])
+				m_registers[SP] = intToMemory(memoryToInt(m_registers[SP]) + 1);
+
+			const int intVal = memoryToInt(m_registers[SP]);
+			m_execCell = memoryToInt(m_memory[intVal]);
 		}
 		break;
 

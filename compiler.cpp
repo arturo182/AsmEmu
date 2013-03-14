@@ -19,7 +19,9 @@ const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, V
 																												{"MUL", VirtualMachine::MUL},
 																												{"BRZ", VirtualMachine::BRZ},
 																												{"POP", VirtualMachine::POP},
-																												{"PUSH", VirtualMachine::PUSH}
+																												{"PUSH", VirtualMachine::PUSH},
+																												{"CALL", VirtualMachine::CALL},
+																												{"RET", VirtualMachine::RET}
 																											}));
 
 
@@ -28,7 +30,8 @@ bool isValidLabel(const QString &label)
 	static QStringList keywords = {
 		"AX", "SP", "SB", "IP", "FLAGS",			//registers
 		"HLT", "INC", "DEC", "CPA", "STO", "ADD",	//mnemonics
-		"SUB", "BRA", "BRN", "MUL", "BRZ"
+		"SUB", "BRA", "BRN", "MUL", "BRZ", "PUSH",
+		"POP", "CALL", "RET"
 	};
 
 	if(keywords.contains(label.toUpper()))
@@ -83,6 +86,9 @@ int Compiler::startCell() const
 
 int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue)
 {
+	if(!mnemonicMap.contains(mnemonic.toUpper()))
+		return 0;
+
 	VirtualMachine::Instruction instr = mnemonicMap.value(mnemonic.toUpper());
 
 	const bool isConst = strValue.contains('$');
@@ -93,55 +99,55 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 
 	switch(instr) {
 		case VirtualMachine::HLT:
-		{
-			emit memoryChanged(cellNo, VirtualMachine::intToMemory(0));
-			return 1;
-		}
-		break;
-
 		case VirtualMachine::POP:
+		case VirtualMachine::PUSH:
+		case VirtualMachine::RET:
 		{
-			emit memoryChanged(cellNo, VirtualMachine::intToMemory(300));
+			static QMap<VirtualMachine::Instruction, int> varMap(std::map<VirtualMachine::Instruction, int>(
+			{
+				{ VirtualMachine::HLT,    0 },
+				{ VirtualMachine::POP,  300 },
+				{ VirtualMachine::PUSH, 400 },
+				{ VirtualMachine::RET,  600 }
+			}));
+
+
+			emit memoryChanged(cellNo, varMap.value(instr));
 			return 1;
 		}
 		break;
-
-		case VirtualMachine::PUSH:
-		{
-			emit memoryChanged(cellNo, VirtualMachine::intToMemory(400));
-			return 1;
-		}
 		break;
 
 		case VirtualMachine::INC:
 		case VirtualMachine::DEC:
+		case VirtualMachine::CALL:
 		{
-			const QList<int> varList = {
-				9300, 9390,
-				9400, 9490,
-				100,  200,
-				9000, 9010
-			};
+			static QMap<VirtualMachine::Instruction, QList<int> > varMap(std::map<VirtualMachine::Instruction, QList<int> >(
+			{
+				{ VirtualMachine::INC,  {9300, 9400, 100, 9000} },
+				{ VirtualMachine::DEC,  {9390, 9490, 200, 9010} },
+				{ VirtualMachine::CALL, {9500, 9510, 500, 9520} }
+			}));
 
-			const int diff = instr - VirtualMachine::INC;
+			const QList<int> varList = varMap.value(instr);
 
 			if(isConst) {
 				return 0;
 			} else if(isPointer) {
 				if(value < 10) {
-					emit memoryChanged(cellNo, varList[0 + diff] + value);
+					emit memoryChanged(cellNo, varList[0] + value);
 					return 1;
 				} else {
-					emit memoryChanged(cellNo, varList[2 + diff]);
+					emit memoryChanged(cellNo, varList[1]);
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
 			} else {
 				if(value < 100) {
-					emit memoryChanged(cellNo, varList[4 + diff] + value);
+					emit memoryChanged(cellNo, varList[2] + value);
 					return 1;
 				} else {
-					emit memoryChanged(cellNo, varList[6 + diff]);
+					emit memoryChanged(cellNo, varList[3]);
 					emit memoryChanged(cellNo + 1, value);
 					return 2;
 				}
@@ -159,7 +165,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 		case VirtualMachine::BRZ:
 		{
 			const QList<int> varList = {
-			//	CPA   STO   ADD   SUB   BRA   BRN   MUL   BRZ
+				//	CPA   STO   ADD   SUB   BRA   BRN   MUL   BRZ
 				9110, 9120, 9130, 9140, 9150, 9160, 9170, 9180, // const < 10
 				9210, 9220, 9210, 9240, 9250, 9260, 9270, 9280, // const >= 10
 				9310, 9320, 9330, 9340, 9350, 9360, 9370, 9380, // pointer < 10
@@ -371,7 +377,7 @@ bool Compiler::compile()
 			} else if(parts[0].contains(':')) {
 				//label
 				m_lineMap.insert(i + 1, codeStart);
-			} else {
+			} else if(parts[0].size()) {
 				//(sequential) mnemonic
 
 				m_lineMap.insert(i + 1, codeStart);

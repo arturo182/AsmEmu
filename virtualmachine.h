@@ -31,6 +31,7 @@ class VirtualMachine : public QObject
 			HLT = 0,
 			INC,
 			DEC,
+			CALL,
 			CPA,
 			STO,
 			ADD,
@@ -40,7 +41,8 @@ class VirtualMachine : public QObject
 			MUL,
 			BRZ,
 			POP,
-			PUSH
+			PUSH,
+			RET
 		};
 
 	public:
