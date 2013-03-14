@@ -7,6 +7,7 @@
 #include "contants.h"
 
 #include <QRegularExpression>
+#include <QDesktopServices>
 #include <QSignalMapper>
 #include <QInputDialog>
 #include <QFileDialog>
@@ -390,7 +391,12 @@ void MainWindow::changeLanguage()
 
 void MainWindow::toggleAsmHelp()
 {
-	m_ui->asmHelpEdit->setVisible(!m_ui->asmHelpEdit->isVisible());
+	QSettings set;
+	QString lang = set.value("lang", "pl").toString();
+	if(lang.isEmpty())
+		lang = "en";
+
+	QDesktopServices::openUrl(qApp->applicationDirPath() + "/help/help_" + lang + ".html");
 }
 
 void MainWindow::readSettings()
@@ -400,8 +406,6 @@ void MainWindow::readSettings()
 	restoreState(set.value("state").toByteArray());
 	m_ui->registersTree->header()->restoreState(set.value("regCols").toByteArray());
 	m_ui->labelsTree->header()->restoreState(set.value("labelCols").toByteArray());
-	m_ui->splitter->restoreState(set.value("splitter").toByteArray());
-	m_ui->asmHelpEdit->setVisible(set.value("asmHelp", false).toBool());
 	m_virtualMachine->setMemorySize(set.value("memorySize", 100).toInt());
 }
 
@@ -412,8 +416,6 @@ void MainWindow::writeSettings()
 	set.setValue("state", saveState());
 	set.setValue("regCols", m_ui->registersTree->header()->saveState());
 	set.setValue("labelCols", m_ui->labelsTree->header()->saveState());
-	set.setValue("splitter", m_ui->splitter->saveState());
-	set.setValue("asmHelp", m_ui->asmHelpEdit->isVisible());
 	set.setValue("memorySize", m_virtualMachine->memorySize());
 }
 

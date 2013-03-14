@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pomoc Fasm (Fulmański Assembler)</title>
+    <meta charset="utf-8">
+    <link href="bootstrap.css" rel="stylesheet">
+    <style>
+		body { margin: 10px; }
+    </style>
+  </head>
+  <body>
+	<div class="row-fluid">
+		<h2>Pomoc Fasm (Fulmański Assembler)</h2>
+		<h3>1. Przebieg kodu</h3>
+		Istnieją dwa sposoby pisania kodu w Fasm. Stary sposób i nowy sposób.
+
+		<h4>1.1 Stary sposób</h4>
+		Piszący starym sposobem musisz określać gdzie w pamięci wszystkie wartości i instrukcje zostaną umieszczone.
+		Aby to zrobić, napisz numer komórki docelowej przed wartością lub instrukcją:
+		<br><br>
+		
+		<pre>5	10
+6	11
+10	CPA 5
+11	STO 6</pre>
+		<br>
+		Ta metoda nie jest jednak polecana ponieważ niektóre instrukcje mogą zajmować więcej niż jedną komórkę pamięci i podczas pisania musisz o tym pamiętać.
+		Aby ominąć ten problem możesz określić tylko numer komórki pierwszej instrukcji i pominąć kolejne.
+		Kompilator umieści kolejne instrukcje w kolejnych komórkach pamięci:
+		<br><br>
+		<pre>5	10
+	11 ; komórka 6
+10	CPA 5
+	STO 6 ; komórka 7 lub 8, zależnie od rozmiaru poprzedniej instrukcji</pre>
+	<br>
+	
+	Może się wydawać że to rozwiązuje problem numerowania komórek.
+	Ale co jeśli chcesz skoczyć do instrukcji, nigdy nie można być pewnym jaki jest jej adres.
+	Dlatego powstał nowy sposób pisania kodu.
+	
+	<h4>1.2 Nowy sposób</h4>
+	Przedstawiamy etykiety. Etykieta to aliasy na komórki pamięci przypisywane podczas kompilacji.
+	Możesz używać etykiet zamiast numerów komórek w instrukcjach. Ale pojawia się problem pozycji startowej.
+	Do tego używamy dyrektyw:
+	<br><br>
+	<pre>.data 5
+x:	10 ;komórka 5
+y:	11 ;komórka 6
+
+.code 10
+start:	CPA x
+	STO y</pre>
+	<br>
+	Czy to nie wygląda przyjemnie? Teraz jeśli chcesz skoczyć do początku kodu wystarczy napisać BRA start.
+	Kompilator zmieni etykietę na adres komórki.
+
+	<h3>2. Typy danych</h3>
+	<h4>2.1 Stałe liczbowe</h4>
+	Operowanie na numerach komórek może i jest fajne, ale co jeśli chciałoby się dodać liczbę 2 do akumulatora?
+	Tworzenie nowej etykiety wydaje się niepotrzebnym problemem. Dlatego powstały stałe liczbowe.
+	Oto jak dodać 2 do akumulatora:
+	<br><br>
+	<pre>.code 10
+ADD $123</pre>
+	<br>
+	Zwróć uwagę na znak dolara przy liczbie, to on odróżnia numer komórki od stałej liczbowej.
+
+	<h4>2.2 Wskaźniki</h4>
+	A co jeśli chcemy użyć wartości komórki której mamy numer w innej komórce? To bardzo proste:
+	<br><br>
+	<pre>.data 0
+x: 2
+
+.code 10
+CPA [x] ;akumulator będzie równy wartości komórki numer 2</pre>
+	<br>
+	Proste, prawda? Ale to nie wszystko! We wskaźniku można wykonywać operacje matematyczne:
+	<br><br>
+	<pre>.data 0
+x: 2
+y: 3
+
+.code 10
+CPA [x + y * 2] ; wartość komórki 8</pre>
+
+	<h3>3. Stos</h3>
+	Czym jest stos, każdy widzi, kto nie widzi niech idzie przeczytać książkę dr Fulmańskiego i wróci później.
+	<br><br>
+	Możesz używać instrukcji POP i PUSH tak samo jak dowolnych innych instrukcji, np.:
+	<br><br>
+	<pre>.data 0
+x: 1
+
+.code 10
+PUSH $1 ; wrzuć 1 na stos
+PUSH 5 ; wrzuć wartość komórki 5
+PUSH [x] ; wrzuć wartość komórki 1
+POP [x] ; zdejmij ze stosu wartość i wstaw do komórki 1
+POP 5 ; zdejmij i wstaw do komórki 5
+;POP $1 nie ma sensu bo nie można przypisać wartości do stałej liczbowej</pre>
+	<br>
+	Możesz także używać bezargumentowej wersji tych instrukcji, działają one na akumulatorze:
+	<br><br>
+	<pre>.code 10
+CPA $5 ;ustaw akumulator na wartość 5
+PUSH ; wrzuć wartość 5 na stos
+(...)
+POP ;ustaw akumulator na 5</pre>
+
+	<h3>4. Rejestry</h3>
+	Rejestry to pola o rozmiarze komórki pamięci przechowywane w innym regionie maszyny. W tym momencie dostęp możliwy jest jedynie do akumulatora.
+	Oto krótki opis każdego z nich:
+	
+	<ul>
+		<li>AX - akumulator, pomaga wykonywać operacje matematyczne bez użycia pamięci</li>
+		<li>IP - wskaźnik instrukcji, wskazuje która komórka będzie wykonana jako następna</li>
+		<li>SP - wskaźnik stosu, wskazuje na początek stosu, wartości wrzucane są na SP-1</li>
+		<li>SB - wskaźnik spodu stosu</li>
+		<li>FLAGS - flagi wskazują sytuacje po wykonaniu operacji arytmetycznej (ADD, SUB, MUL, INC, DEC). Aktualnie istnieją trzy flagi:</li>
+		<ul>
+			<li>ZF - flaga zero, ustawiona na 1 gdy wynikiem ostatniej operacji było 0</li>
+			<li>NF - flaga ujemności, ustawiona na 1 gdy wynik ostatniej operacji był mniejszy od 0</li>
+			<li>OF - flaga przepełnienia, ustawiona na 1 gdy ostatnia operacja sprawiła wystąpienie przepełnienie lub niedomiar zmiennej</li>
+		</ul>
+	</ul>
+
+	<h3>5. Tabela instrukcji</h3>
+	
+	<div class="alert alert-info"><strong>Pamiętaj:</strong> Etykiety traktujemy jako wartości.</div>
+	
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Skrótowiec</th>
+				<th>Znaczenie</th>
+				<th>Atrybut</th>
+				<th>Opis</th>
+			</tr>
+		</thead>
+		
+		<tbody>
+			<tr>
+				<td>HLT</td>
+				<td>Halt</td>
+				<td>brak</td>
+				<td>Zatrzymuje wykonywanie programu</td>
+			</tr>				
+			<tr>
+				<td>CPA</td>
+				<td>Copy to Accumulator</td>
+				<td>wartość/wskaźnik/stała</td>
+				<td>Kopiuje argument do akumulatora</td>
+			</tr>
+			<tr>
+				<td>STO</td>
+				<td>Store</td>
+				<td>wartość/wskaźnik</td>
+				<td>Zapisuje wartość akumulatora do argumentu</td>
+			</tr>				
+			<tr>
+				<td>ADD</td>
+				<td>Addition</td>
+				<td>wartość/wskaźnik/stała</td>
+				<td>Dodaje argument do akumulatora i zapisuje wynik w akumulatorze</td>
+			</tr>				
+			<tr>
+				<td>SUB</td>
+				<td>Subtraction</td>
+				<td>wartość/wskaźnik/stała</td>
+				<td>Odejmuje argument od akumulatora i zapisuje wynik w akumulatorze</td>
+			</tr>				
+			<tr>
+				<td>BRA</td>
+				<td>Branch Always</td>
+				<td>wartość/stała</td>
+				<td>Skok do argumentu</td>
+			</tr>				
+			<tr>
+				<td>BRN</td>
+				<td>Branch when Negative</td>
+				<td>wartość/stała</td>
+				<td>Skacze do argumentu jeśli akumulator ma wartość ujemną</td>
+			</tr>				
+			<tr>
+				<td>MUL</td>
+				<td>Multiplication</td>
+				<td>wartość/wskaźnik/stała</td>
+				<td>Mnoży akumulator przez argument i zapisuje wynik w akumulatorze</td>
+			</tr>				
+			<tr>
+				<td>BRZ</td>
+				<td>Branch when Zero </td>
+				<td>wartość/stała</td>
+				<td>Skacze do argumentu jeśli akumulator ma wartość 0</td>
+			</tr>				
+			<tr>
+				<td>INC</td>
+				<td>Increment</td>
+				<td>wartość/wskaźnik</td>
+				<td>Zwiększa wartość argumentu o 1</td>
+			</tr>				
+			<tr>
+				<td>DEC</td>
+				<td>Decrement</td>
+				<td>wartość/wskaźnik</td>
+				<td>Zmniejsza wartość argumentu o 1</td>
+			</tr>				
+			<tr>
+				<td>PUSH</td>
+				<td>Push</td>
+				<td>brak</td>
+				<td>Wrzuca wartość akumulatora na stos</td>
+			</tr>				
+			<tr>
+				<td>PUSH</td>
+				<td>Push</td>
+				<td>wartość/wskaźnik/stała</td>
+				<td>Wrzuca argument na stos</td>
+			</tr>				
+			<tr>
+				<td>POP</td>
+				<td>Pop</td>
+				<td>brak</td>
+				<td>Zdejmuje wartość ze stosu i wstawia ją do akumulatora</td>
+			</tr>				
+			<tr>
+				<td>POP</td>
+				<td>Pop</td>
+				<td>wartość/wskaźnik</td>
+				<td>Zdejmuje wartość ze stosu i wstawia ją do argumentu</td>
+			</tr>				
+			<tr>
+				<td>CALL</td>
+				<td>Call</td>
+				<td>wartość/stała</td>
+				<td>Wrzuca na stos aktualną wartość wskaźnika instrukcji i skacze do argumentu</td>
+			</tr>				
+			<tr>
+				<td>RET</td>
+				<td>Return</td>
+				<td>brak</td>
+				<td>Zdejmuje wartość ze stosu i skacze do komórki o zdjętym numerze</td>
+			</tr>				
+		</tbody>
+	</div>
+  </body>
+</html>

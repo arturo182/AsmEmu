@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Fasm (Fulmański Assembler) Help</title>
+    <meta charset="utf-8">
+    <link href="bootstrap.css" rel="stylesheet">
+    <style>
+		body { margin: 10px; }
+    </style>
+  </head>
+  <body>
+	<div class="row-fluid">
+		<h2>Fasm (Fulmański Assembler) Help</h2>
+		<h3>1. Code flow</h3>
+		There are basically two ways to write programs in Fasm, the old way and the new way.
+
+		<h4>1.1 The old way</h4>
+		When writing in the old way, you have to specify where all the values and instructions are located in the memory. 
+		To do so, write the memory cell number before the value or instruction:
+		<br><br>
+		
+		<pre>5	10
+6	11
+10	CPA 5
+11	STO 6</pre>
+		<br>
+		This way is discouraged because you have to remember that some of the instructions take up two memory cells and your code must reflect that. 
+		A way to get rid of this problem is to specify only the cell number of the first instruction and omit it for the next ones. 
+		The compiler will put them in the sequential memory cells:
+		<br><br>
+		<pre>5	10
+	11 ; cell number 6
+10	CPA 5
+	STO 6 ; cell number 7 or 8 depending on the size od previous instruction</pre>
+	<br>
+	
+	You might think that this takes care of the problem of cell numbering. 
+	But what if you have to branch to a instruction, you can never be sure what is the address of that instruction. 
+	This is why the new way was introduced.
+	
+	<h4>1.2 The new way</h4>
+	Introducing the labels. Labels are aliases for memory cells that are assigned at compile time. 
+	You can use them instead of cell numbers in your instructions. But this raises the issue of where the code starts. 
+	That's where directives come in:
+	<br><br>
+	<pre>.data 5
+x:	10 ;cell 5
+y:	11 ;cell number 6
+
+.code 10
+start:	CPA x
+	STO y</pre>
+	<br>
+	Doesn't that look neat? Now, if you want to branch to the start of the code just use BRA start, 
+	the compiler will change that to 10 or whatever the value will be.
+
+	<h3>2. Value types</h3>
+	<h4>2.1 Constants</h4>
+	Operating on cell numbers is pretty cool, but what if you want to add the number 2 to the accumulator? 
+	Having to create a new label for it feels like an overkill. That's why we introduce const values. 
+	This is how you add 2 to the accumulator now:
+	<br><br>
+	<pre>.code 10
+ADD $123</pre>
+	<br>
+	Notice the dollar sign next to the value? That's what distinguishes a cell number from a constant.
+
+	<h4>2.2 Pointers</h4>
+	And what if we want to use the value of a cell that we have the number of? There's a very simple way to do that too:
+	<br><br>
+	<pre>.data 0
+x: 2
+
+.code 10
+CPA [x] ;the accumulator will contain the value of cell number 2</pre>
+	<br>
+	That's easy right? But wait, there's more! You can perform math operations in a pointer:
+	<br><br>
+	<pre>.data 0
+x: 2
+y: 3
+
+.code 10
+CPA [x + y * 2] ; the value of cell 8</pre>
+
+	<h3>3. Stack</h3>
+	Everyone knows what a stack is, if you don't know what it is, go read dr Fulmański's book and come back later.
+	<br><br>
+	You can use the POP and PUSH instructions like any other instructions, ie.:
+	<br><br>
+	<pre>.data 0
+x: 1
+
+.code 10
+PUSH $1 ; push the value 1 to the stack
+PUSH 5 ; push the value of the cell number 5
+PUSH [x] ; push the value of cell number 1
+POP [x] ; take the value off the stack and put it in cell number 1
+POP 5 ; put the value in cell number 5
+;POP $1 makes so sense since you can't assign a value to a constant</pre>
+	<br>
+	You can also use the operandless version which operate on the accumulator:
+	<br><br>
+	<pre>.code 10
+CPA $5 ;set acumulator to 5
+PUSH ; push the 5 o the stack
+(...)
+POP ;set the accumulator to 5</pre>
+
+	<h3>4. Registers</h3>
+	Registers are cell-sized values that are kept in other region of the data machine and apart from the accumulator are inaccessible at the moment. 
+	Here's a short description of all of them:
+	
+	<ul>
+		<li>AX - the accumulator, it helps you perform mathematic operations without having to use memory cells</li>
+		<li>IP - instruction pointer, points to the cell number of the instruction that's going to be executed next</li>
+		<li>SP - stack pointer, points to the top of the stack, the pushed values go to SP-1</li>
+		<li>SB - stack base, points to the bottom of the stack</li>
+		<li>FLAGS - flags indicate the situation after the last arithmetic operation (ADD, SUB, MUL, INC, DEC). There are three flags:</li>
+		<ul>
+			<li>ZF - the zero flag, is set to 1 if the last operation resulted in 0</li>
+			<li>NF - the negative flag, is set to 1 if the last operation resulted in a negative number</li>
+			<li>OF - the overflow flag, is set to 1 if the last operation resulted in an over- or underflow</li>
+		</ul>
+	</ul>
+
+	<h3>5. Instruction table</h3>
+	
+	<div class="alert alert-info"><strong>Reminder:</strong> Labels are also considered values.</div>
+	
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Mnemonic</th>
+				<th>Meaning</th>
+				<th>Operand</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		
+		<tbody>
+			<tr>
+				<td>HLT</td>
+				<td>Halt</td>
+				<td>none</td>
+				<td>Stop the program execution</td>
+			</tr>				
+			<tr>
+				<td>CPA</td>
+				<td>Copy to Accumulator</td>
+				<td>value/pointer/const</td>
+				<td>Copy the operand to the accumulator</td>
+			</tr>
+			<tr>
+				<td>STO</td>
+				<td>Store</td>
+				<td>value/pointer</td>
+				<td>Store the accumulator value to the operand</td>
+			</tr>				
+			<tr>
+				<td>ADD</td>
+				<td>Addition</td>
+				<td>value/pointer/const</td>
+				<td>Add the operand value to the accumulator and store the result in the accumulator</td>
+			</tr>				
+			<tr>
+				<td>SUB</td>
+				<td>Subtraction</td>
+				<td>value/pointer/const</td>
+				<td>Subtract the operand value from the accumulator and store the result in the accumulator</td>
+			</tr>				
+			<tr>
+				<td>BRA</td>
+				<td>Branch Always</td>
+				<td>value/const</td>
+				<td>Branch to operand</td>
+			</tr>				
+			<tr>
+				<td>BRN</td>
+				<td>Branch when Negative</td>
+				<td>value/const</td>
+				<td>Branch to operand value if accumulator is less than zero</td>
+			</tr>				
+			<tr>
+				<td>MUL</td>
+				<td>Multiplication</td>
+				<td>value/pointer/const</td>
+				<td>Multiply the operand value by the accumulator and store the result in the accumulator</td>
+			</tr>				
+			<tr>
+				<td>BRZ</td>
+				<td>Branch when Zero </td>
+				<td>value/const</td>
+				<td>Branch to operand value if accumulator is 0</td>
+			</tr>				
+			<tr>
+				<td>INC</td>
+				<td>Increment</td>
+				<td>value/pointer</td>
+				<td>Increment (add 1) the operand value</td>
+			</tr>				
+			<tr>
+				<td>DEC</td>
+				<td>Decrement</td>
+				<td>value/pointer</td>
+				<td>Decrement (subtract 1) the operand value</td>
+			</tr>				
+			<tr>
+				<td>PUSH</td>
+				<td>Push</td>
+				<td>none</td>
+				<td>Push the accumulator value to the stack</td>
+			</tr>				
+			<tr>
+				<td>PUSH</td>
+				<td>Push</td>
+				<td>value/pointer/const</td>
+				<td>Push the operand value to the stack</td>
+			</tr>				
+			<tr>
+				<td>POP</td>
+				<td>Pop</td>
+				<td>none</td>
+				<td>Pop the stack into the accumulator</td>
+			</tr>				
+			<tr>
+				<td>POP</td>
+				<td>Pop</td>
+				<td>value/pointer</td>
+				<td>Pop the stack into the operand value</td>
+			</tr>				
+			<tr>
+				<td>CALL</td>
+				<td>Call</td>
+				<td>value/const</td>
+				<td>Push the current instruction pointer to the stack and branch to the operand value</td>
+			</tr>				
+			<tr>
+				<td>RET</td>
+				<td>Return</td>
+				<td>none</td>
+				<td>Pop the stack and branch to the popped cell number</td>
+			</tr>				
+		</tbody>
+	</div>
+  </body>
+</html>
