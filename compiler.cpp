@@ -263,6 +263,7 @@ bool Compiler::compile()
 			/*2 parts so one of:
 			* - directive value
 			* - label value
+			* - label label
 			* - (sequential) mnemonic value
 			* - cell value
 			* - cell mnemonic
@@ -294,16 +295,26 @@ bool Compiler::compile()
 					emit memoryChanged(dataStart, value);
 					++dataStart;
 				} else {
-					//labeled mnemonic
-
 					if(!isValidLabel(label))
 						return false;
 
 					m_lineMap.insert(i + 1, codeStart);
-					m_labelMap.insert(label, codeStart);
 
-					const int size = assembleInstruction(codeStart, parts[1], 0);
-					codeStart += size;
+					if(isValidLabel(parts[1])) {
+						//labeled label
+
+						m_labelMap.insert(label, dataStart);
+
+						emit memoryChanged(dataStart, m_labelMap.value(parts[1]));
+						++dataStart;
+					} else {
+						//labeled mnemonic
+
+						m_labelMap.insert(label, codeStart);
+
+						const int size = assembleInstruction(codeStart, parts[1], 0);
+						codeStart += size;
+					}
 				}
 			} else {
 				bool hasCellNumber = false;
