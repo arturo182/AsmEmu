@@ -99,23 +99,62 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 
 	switch(instr) {
 		case VirtualMachine::HLT:
-		case VirtualMachine::POP:
-		case VirtualMachine::PUSH:
 		case VirtualMachine::RET:
 		{
 			static QMap<VirtualMachine::Instruction, int> varMap(std::map<VirtualMachine::Instruction, int>(
 			{
 				{ VirtualMachine::HLT,    0 },
-				{ VirtualMachine::POP,  300 },
-				{ VirtualMachine::PUSH, 400 },
 				{ VirtualMachine::RET,  600 }
 			}));
-
 
 			emit memoryChanged(cellNo, varMap.value(instr));
 			return 1;
 		}
 		break;
+
+		case VirtualMachine::POP:
+		case VirtualMachine::PUSH:
+		{
+			static QMap<VirtualMachine::Instruction, QList<int> > varMap(std::map<VirtualMachine::Instruction, QList<int> >(
+			{
+				{ VirtualMachine::POP,  {9610, 9620, 300, 9630, 9640, 9650, 9660} },
+				{ VirtualMachine::PUSH, {9740, 9720, 400, 9730, 9740, 9750, 9760} },
+			}));
+
+			const QList<int> varList = varMap.value(instr);
+
+			if(isConst) {
+				if(value < 10) {
+					emit memoryChanged(cellNo, varList[0] + value);
+					return 1;
+				} else {
+					emit memoryChanged(cellNo, varList[1]);
+					emit memoryChanged(cellNo + 1, value);
+					return 2;
+				}
+			} else if(strValue.isEmpty()) {
+				emit memoryChanged(cellNo, varList[2]);
+				return 1;
+			} else if(isPointer) {
+				if(value < 10) {
+					emit memoryChanged(cellNo, varList[3] + value);
+					return 1;
+				} else {
+					emit memoryChanged(cellNo, varList[4]);
+					emit memoryChanged(cellNo + 1, value);
+					return 2;
+				}
+			} else {
+				if(value < 10) {
+					emit memoryChanged(cellNo, varList[5] + value);
+					return 1;
+				} else {
+					emit memoryChanged(cellNo, varList[6]);
+					emit memoryChanged(cellNo + 1, value);
+					return 2;
+				}
+			}
+		}
 		break;
 
 		case VirtualMachine::INC:
@@ -125,7 +164,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 			static QMap<VirtualMachine::Instruction, QList<int> > varMap(std::map<VirtualMachine::Instruction, QList<int> >(
 			{
 				{ VirtualMachine::INC,  {9300, 9400, 100, 9000} },
-				{ VirtualMachine::DEC,  {9390, 9490, 200, 9010} },
+				{ VirtualMachine::DEC,  {9390, 9490, 200, 9090} },
 				{ VirtualMachine::CALL, {9500, 9510, 500, 9520} }
 			}));
 
@@ -165,7 +204,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 		case VirtualMachine::BRZ:
 		{
 			const QList<int> varList = {
-				//	CPA   STO   ADD   SUB   BRA   BRN   MUL   BRZ
+			//	CPA   STO   ADD   SUB   BRA   BRN   MUL   BRZ
 				9110, 9120, 9130, 9140, 9150, 9160, 9170, 9180, // const < 10
 				9210, 9220, 9210, 9240, 9250, 9260, 9270, 9280, // const >= 10
 				9310, 9320, 9330, 9340, 9350, 9360, 9370, 9380, // pointer < 10
@@ -318,7 +357,7 @@ bool Compiler::compile()
 
 						m_labelMap.insert(label, codeStart);
 
-						const int size = assembleInstruction(codeStart, parts[1], 0);
+						const int size = assembleInstruction(codeStart, parts[1], "");
 						codeStart += size;
 					}
 				}
@@ -339,7 +378,7 @@ bool Compiler::compile()
 					} else {
 						//a mnemonic
 
-						const int size = assembleInstruction(cellNumber, parts[1], 0);
+						const int size = assembleInstruction(cellNumber, parts[1], "");
 						codeStart = cellNumber + size;
 					}
 

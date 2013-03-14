@@ -9,6 +9,7 @@
 #include <QRegExp>
 #include <QDebug>
 #include <QMap>
+#include <QMessageBox>
 
 int VirtualMachine::memoryToInt(const int &mem)
 {
@@ -45,10 +46,17 @@ void VirtualMachine::assemble(const QString &code)
 
 	connect(&compiler, &Compiler::memoryChanged, [=](const int &cellNo, const int &value)
 	{
+		if(cellNo < 0 || cellNo >= m_memory.size())
+			return;
+
 		m_memory[cellNo] = value;
 	});
 
-	compiler.compile();
+	bool result = compiler.compile();
+	if(!result) {
+		QMessageBox::warning(0, "Error", "Compile error");
+		return;
+	}
 
 	m_labels = compiler.labelMap();
 	emit labelsChanged();
@@ -123,6 +131,28 @@ bool VirtualMachine::exec()
 				value = memoryToInt(m_memory[m_execCell]);
 				value = m_memory.value(value);
 			} else if(deca == 2) {
+				++m_execCell;
+				value = m_memory[m_execCell];
+			}
+		} else if(hecto == 6 || hecto == 7) {
+			instr = (hecto == 6) ? POP : PUSH;
+
+			if(deca == 1) {
+				isConst = true;
+				value = v1;
+			} else if(deca == 2) {
+				isConst = true;
+				++m_execCell;
+				value = m_memory[m_execCell];
+			} else if(deca == 3) {
+				value = m_memory.value(v1);
+			} else if(deca == 4) {
+				++m_execCell;
+				value = memoryToInt(m_memory[m_execCell]);
+				value = m_memory.value(value);
+			} else if(deca == 5) {
+				value = v1;
+			} else if(deca == 6) {
 				++m_execCell;
 				value = m_memory[m_execCell];
 			}
@@ -235,7 +265,12 @@ bool VirtualMachine::exec()
 				m_registers[SP] = intToMemory(memoryToInt(m_registers[SP]) + 1);
 
 			const int intVal = memoryToInt(m_registers[SP]);
-			m_registers[AX] = m_memory[intVal];
+
+			if(kilo == 0) {
+				m_registers[AX] = m_memory[intVal];
+			} else {
+				m_memory[value] = m_memory[intVal];
+			}
 
 			++m_execCell;
 		}
@@ -244,7 +279,14 @@ bool VirtualMachine::exec()
 		case PUSH:
 		{
 			const int stackPos = memoryToInt(m_registers[SP]);
-			m_memory[stackPos] = m_registers[AX];
+
+			if(kilo == 0) {
+				m_memory[stackPos] = m_registers[AX];
+			} else if(isConst) {
+				m_memory[stackPos] = value;
+			} else {
+				m_memory[stackPos] = m_memory[value];
+			}
 
 			m_registers[SP] = intToMemory(stackPos - 1);
 
@@ -284,7 +326,7 @@ bool VirtualMachine::exec()
 	m_registers[IP] = m_execCell;
 
 	emit memoryChanged(m_memory);
-	emit registersChanged(m_registers);
+	emit registersChanged();
 	emit labelsChanged();
 
 	if(m_execCell > m_memory.size() - 1)
@@ -335,7 +377,7 @@ void VirtualMachine::setRegisters(const QVector<int> &registers)
 
 	m_registers = registers;
 
-	emit registersChanged(m_registers);
+	emit registersChanged();
 }
 
 QString VirtualMachine::registerName(const int &registerNo) const
@@ -373,7 +415,7 @@ void VirtualMachine::setRegisterCount(const int &registerCount)
 
 	m_registers.resize(registerCount);
 
-	emit registersChanged(m_registers);
+	emit registersChanged();
 }
 
 int VirtualMachine::registerCount() const
@@ -421,7 +463,7 @@ void VirtualMachine::resetRegisters()
 	for(int i = 0; i < m_registers.size(); ++i)
 		m_registers[i] = 0;
 
-	emit registersChanged(m_registers);
+	emit registersChanged();
 }
 
 void VirtualMachine::resetMemory()

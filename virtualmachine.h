@@ -82,7 +82,7 @@ class VirtualMachine : public QObject
 
 	signals:
 		void memoryChanged(const QVector<int> &memory);
-		void registersChanged(const QVector<int> &registers);
+		void registersChanged();
 		void labelsChanged();
 
 	private:
