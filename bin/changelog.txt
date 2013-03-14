@@ -1,0 +1,25 @@
+* - zmiany w programie, # - zmiany w języku
+
+1.1.5
+* Zaktualizowano pomoc w progamie (F1 - polecam!)
+* Dodano możliwość otwierania pliku przez upuszczenie go na edytor
+* Usunięto zera wiodące z widoku pamięci
+* Dodano obsługę sortowania listy etykiet i rejestrów
+* Dodano podświetlanie nazw rejestrów
+* Dodano dziennik zmian (ten plik)
+# Dodano obsługę etykiet w następnej linijce
+# Dodano nowe rejestry (SP - Stack Pointer, SB - Stack Base, IP - Instruction Pointer, FLAGS)
+# Dodano obsługę etykiet i prostych wyrażeń matematycznych we wskaźnikach ([etykieta + 5 - start * 2])
+# Dodano obsługę stosu (PUSH i POP)
+# Dodano przypisywanie etykiet do etykiet (start: stop)
+# Dodano instrukcje wywoływania podprogramów (CALL, RET)
+
+1.1
+* Dodano listę ostatnio otwieranych plików.
+# Dodano instrukcje INC i DEC
+# Dodano obsługę etykiet (start:)
+# Dodano obsługę wskaźników ([10]) i stałych liczbowych ($1)
+# Dodano obsługę dyrektyw (.code 5)
+
+1.0
+* Pierwsza wersja programu
