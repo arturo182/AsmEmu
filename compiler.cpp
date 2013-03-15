@@ -27,7 +27,7 @@ const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, V
 
 bool isValidLabel(const QString &label)
 {
-	const QRegularExpression labelPattern("^[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*$");
+	const QRegularExpression labelPattern("^[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*$", QRegularExpression::CaseInsensitiveOption);
 	const QRegularExpressionMatch match = labelPattern.match(label);
 
 	return match.hasMatch();
