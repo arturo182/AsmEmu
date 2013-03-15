@@ -35,7 +35,7 @@ class MainWindow : public QMainWindow
 		void open();
 		bool save();
 		bool saveAs();
-		void assemble();
+		bool assemble();
 		void startExec();
 		void singleExec();
 		void stopExec();

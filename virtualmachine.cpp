@@ -39,7 +39,7 @@ VirtualMachine::VirtualMachine(QObject *parent) :
 	setRegisterCount(5);
 }
 
-void VirtualMachine::assemble(const QString &code)
+bool VirtualMachine::assemble(const QString &code, QStringList *msgs)
 {
 	Compiler compiler(code);
 	compiler.compile();
@@ -52,14 +52,14 @@ void VirtualMachine::assemble(const QString &code)
 		m_memory[cellNo] = value;
 	});
 
-	bool result = compiler.compile();
-	if(!result) {
-		QMessageBox::warning(0, "Error", "Compile error");
-		return;
-	}
+	const bool result = compiler.compile(msgs);
+	if(!result)
+		return false;
 
 	m_labels = compiler.labelMap();
 	emit labelsChanged();
+
+	return true;
 }
 
 /**

@@ -12,7 +12,7 @@ class Compiler : public QObject
 	public:
 		Compiler(const QString &code);
 		
-		bool compile();
+		bool compile(QStringList *msgs = 0);
 
 		const QMap<int, int> &lineMap() const;
 		const QMap<QString, int> &labelMap() const;
@@ -22,7 +22,7 @@ class Compiler : public QObject
 		void memoryChanged(const int &cellNo, const int &value);
 
 	private:
-		int assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue);
+		int assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue, QString *error = 0);
 		int evalExpression(const QString &expr);
 
 	private:

@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_positionLabel(new QLabel(this))
 {
 	m_ui->setupUi(this);
+	m_ui->canvasDock->hide();
 
 	m_ui->vmToolBar->addWidget(new QLabel(tr("Start cell: "), this));
 	m_ui->vmToolBar->addWidget(m_startCellSpinBox);
@@ -164,9 +165,25 @@ bool MainWindow::saveAs()
 	return saveFile(fileName);
 }
 
-void MainWindow::assemble()
+bool MainWindow::assemble()
 {
-	m_virtualMachine->assemble(m_ui->codeEdit->toPlainText());
+	m_ui->messagesTree->clear();
+
+	QStringList msgs;
+	const bool result = m_virtualMachine->assemble(m_ui->codeEdit->toPlainText(), &msgs);
+	if(result)
+		return true;
+
+	foreach(const QString &message, msgs) {
+		QTreeWidgetItem *messageItem = new QTreeWidgetItem(m_ui->messagesTree);
+		messageItem->setIcon(0, QIcon(":/icons/cancel2.png"));
+		messageItem->setText(0, message.mid(0, message.indexOf(':')));
+		messageItem->setText(1, message.mid(message.indexOf(':') + 1));
+	}
+
+	rewindExec();
+
+	return false;
 }
 
 void MainWindow::startExec()
@@ -184,7 +201,8 @@ void MainWindow::startExec()
 	m_prevRegisters = m_virtualMachine->registers();
 	m_prevStartCell = m_startCellSpinBox->value();
 
-	m_virtualMachine->assemble(m_ui->codeEdit->toPlainText());
+	if(!assemble())
+		return;
 
 	while(m_virtualMachine->exec()) {
 		m_startCellSpinBox->setValue(m_virtualMachine->execCell());
@@ -212,7 +230,8 @@ void MainWindow::singleExec()
 		m_prevRegisters = m_virtualMachine->registers();
 		m_prevStartCell = m_startCellSpinBox->value();
 
-		m_virtualMachine->assemble(m_ui->codeEdit->toPlainText());
+		if(!assemble())
+			return;
 	}
 
 	if(!m_ui->singleStepAction->isEnabled())
@@ -244,6 +263,7 @@ void MainWindow::rewindExec()
 	m_ui->singleStepAction->setEnabled(true);
 	m_ui->memorySizeAction->setEnabled(true);
 	m_ui->rewindAction->setEnabled(false);
+	m_ui->stopAction->setEnabled(false);
 
 	m_ui->labelsTree->clear();
 	m_labelItems.clear();
@@ -406,6 +426,7 @@ void MainWindow::readSettings()
 	restoreState(set.value("state").toByteArray());
 	m_ui->registersTree->header()->restoreState(set.value("regCols").toByteArray());
 	m_ui->labelsTree->header()->restoreState(set.value("labelCols").toByteArray());
+	m_ui->messagesTree->header()->restoreState(set.value("msgsCols").toByteArray());
 	m_virtualMachine->setMemorySize(set.value("memorySize", 100).toInt());
 }
 
@@ -416,6 +437,7 @@ void MainWindow::writeSettings()
 	set.setValue("state", saveState());
 	set.setValue("regCols", m_ui->registersTree->header()->saveState());
 	set.setValue("labelCols", m_ui->labelsTree->header()->saveState());
+	set.setValue("msgsCols", m_ui->messagesTree->header()->saveState());
 	set.setValue("memorySize", m_virtualMachine->memorySize());
 }
 

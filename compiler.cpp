@@ -27,6 +27,14 @@ const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, V
 
 bool isValidLabel(const QString &label)
 {
+	const QRegularExpression labelPattern("^[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*$");
+	const QRegularExpressionMatch match = labelPattern.match(label);
+
+	return match.hasMatch();
+}
+
+bool isKeyword(const QString &label)
+{
 	static QStringList keywords = {
 		"AX", "SP", "SB", "IP", "FLAGS",			//registers
 		"HLT", "INC", "DEC", "CPA", "STO", "ADD",	//mnemonics
@@ -34,10 +42,7 @@ bool isValidLabel(const QString &label)
 		"POP", "CALL", "RET"
 	};
 
-	if(keywords.contains(label.toUpper()))
-		return false;
-
-	return true;
+	return keywords.contains(label.toUpper());
 }
 
 Compiler::Compiler(const QString &code)
@@ -84,15 +89,22 @@ int Compiler::startCell() const
 	return m_startCell;
 }
 
-int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue)
+int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue, QString *error)
 {
-	if(!mnemonicMap.contains(mnemonic.toUpper()))
-		return 0;
+	if(!mnemonicMap.contains(mnemonic.toUpper())) {
+		if(error) *error = tr("Invalid mnemonic \"%1\"").arg(mnemonic.toUpper());
+		return -1;
+	}
 
-	VirtualMachine::Instruction instr = mnemonicMap.value(mnemonic.toUpper());
-
+	const VirtualMachine::Instruction instr = mnemonicMap.value(mnemonic.toUpper());
 	const bool isConst = strValue.contains('$');
 	const bool isPointer = strValue.contains('[');
+
+	if((isPointer && !strValue.contains(']')) || (!isPointer && strValue.contains(']'))) {
+		if(error) *error = tr("Pointer symbol missing");
+		return -1;
+	}
+
 	int value = QString(strValue).remove(QRegularExpression("\\$|\\[|\\]")).toInt();
 	if(isPointer)
 		value = evalExpression(QString(strValue).remove(QRegularExpression("\\[|\\]")));
@@ -171,7 +183,8 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 			const QList<int> varList = varMap.value(instr);
 
 			if(isConst) {
-				return 0;
+				if(error) *error = tr("\"%1\" doesn't work on const values").arg(mnemonic.toUpper());
+				return -1;
 			} else if(isPointer) {
 				if(value < 10) {
 					emit memoryChanged(cellNo, varList[0] + value);
@@ -265,7 +278,7 @@ int Compiler::evalExpression(const QString &expr)
 	return evaluator.eval(result);
 }
 
-bool Compiler::compile()
+bool Compiler::compile(QStringList *msgs)
 {
 	int dataStart = 0;
 	int codeStart = 0;
@@ -288,8 +301,15 @@ bool Compiler::compile()
 			if(parts[0].contains(':')) {
 				const QString label = parts[0].left(parts[0].size() - 1);
 
-				if(!isValidLabel(label))
+				if(!isValidLabel(label)) {
+					if(msgs) msgs->append(tr("%1:Invalid label name \"%2\"").arg(i + 1).arg(label));
 					return false;
+				}
+
+				if(isKeyword(label)) {
+					if(msgs) msgs->append(tr("%1:Reserved word used \"%2\"").arg(i + 1).arg(label));
+					return false;
+				}
 
 				m_labelMap.insert(label, codeStart);
 				cellNumber = codeStart;
@@ -300,7 +320,12 @@ bool Compiler::compile()
 			if(m_labelMap.contains(parts[2]))
 				realVal = QString::number(m_labelMap.value(parts[2]));
 
-			const int size = assembleInstruction(cellNumber, parts[1], realVal);
+			QString error;
+			const int size = assembleInstruction(cellNumber, parts[1], realVal, &error);
+			if(size == -1) {
+				if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
+				return false;
+			}
 
 			m_lineMap.insert(i + 1, cellNumber);
 			codeStart = cellNumber + size;
@@ -322,9 +347,22 @@ bool Compiler::compile()
 				} else if(parts[0].toLower() == ".code") {
 					codeStart = parts[1].toInt();
 					m_startCell = codeStart;
+				} else {
+					if(msgs) msgs->append(tr("%1:Unknown directive \"%2\"").arg(i + 1).arg(parts[0]));
+					return false;
 				}
 			} else if(parts[0].contains(':')) {
 				const QString label = parts[0].left(parts[0].size() - 1);
+
+				if(!isValidLabel(label)) {
+					if(msgs) msgs->append(tr("%1:Invalid label name \"%2\"").arg(i + 1).arg(label));
+					return false;
+				}
+
+				if(isKeyword(label)) {
+					if(msgs) msgs->append(tr("%1:Reserved word used \"%2\"").arg(i + 1).arg(label));
+					return false;
+				}
 
 				bool isNumber = false;
 				const int value = parts[1].toInt(&isNumber);
@@ -332,17 +370,11 @@ bool Compiler::compile()
 				if(isNumber) {
 					//variable definition
 
-					if(!isValidLabel(label))
-						return false;
-
 					m_lineMap.insert(i + 1, dataStart);
 					m_labelMap.insert(label, dataStart);
 					emit memoryChanged(dataStart, value);
 					++dataStart;
 				} else {
-					if(!isValidLabel(label))
-						return false;
-
 					m_lineMap.insert(i + 1, codeStart);
 
 					if(isValidLabel(parts[1])) {
@@ -357,7 +389,13 @@ bool Compiler::compile()
 
 						m_labelMap.insert(label, codeStart);
 
-						const int size = assembleInstruction(codeStart, parts[1], "");
+						QString error;
+						const int size = assembleInstruction(codeStart, parts[1], "", &error);
+						if(size == -1) {
+							if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
+							return false;
+						}
+
 						codeStart += size;
 					}
 				}
@@ -378,7 +416,13 @@ bool Compiler::compile()
 					} else {
 						//a mnemonic
 
-						const int size = assembleInstruction(cellNumber, parts[1], "");
+						QString error;
+						const int size = assembleInstruction(cellNumber, parts[1], "", &error);
+						if(size == -1) {
+							if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
+							return false;
+						}
+
 						codeStart = cellNumber + size;
 					}
 
@@ -393,7 +437,12 @@ bool Compiler::compile()
 					if(m_labelMap.contains(parts[1]))
 						realVal = QString::number(m_labelMap.value(parts[1]));
 
-					const int size = assembleInstruction(codeStart, parts[0], realVal);
+					QString error;
+					const int size = assembleInstruction(codeStart, parts[0], realVal, &error);
+					if(size == -1) {
+						if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
+						return false;
+					}
 
 					m_lineMap.insert(i + 1, codeStart);
 					codeStart += size;
@@ -421,7 +470,13 @@ bool Compiler::compile()
 
 				m_lineMap.insert(i + 1, codeStart);
 
-				const int size = assembleInstruction(codeStart, parts[0], 0);
+				QString error;
+				const int size = assembleInstruction(codeStart, parts[0], 0, &error);
+				if(size == -1) {
+					if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
+					return false;
+				}
+
 				codeStart += size;
 			}
 		}

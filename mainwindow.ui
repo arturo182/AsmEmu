@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>731</width>
-    <height>445</height>
+    <width>780</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,7 +62,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>731</width>
+     <width>780</width>
      <height>21</height>
     </rect>
    </property>
@@ -125,6 +125,9 @@
    <addaction name="helpMenu"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>Main Toolbar</string>
+   </property>
    <property name="iconSize">
     <size>
      <width>16</width>
@@ -150,6 +153,9 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="vmToolBar">
+   <property name="windowTitle">
+    <string>Virtual Machine Toolbar</string>
+   </property>
    <property name="iconSize">
     <size>
      <width>16</width>
@@ -214,57 +220,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="memoryDock">
-   <property name="windowTitle">
-    <string>Memory</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="memoryDockWidget">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="MemoryView" name="memoryView">
-       <property name="font">
-        <font>
-         <family>Courier</family>
-        </font>
-       </property>
-       <property name="lineWrapMode">
-        <enum>QPlainTextEdit::NoWrap</enum>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="plainText">
-        <string/>
-       </property>
-       <property name="zeroPadding" stdset="0">
-        <number>5</number>
-       </property>
-       <property name="lineStep" stdset="0">
-        <number>10</number>
-       </property>
-       <property name="zeroStart" stdset="0">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <widget class="QDockWidget" name="labelsDock">
    <property name="windowTitle">
     <string>Labels</string>
@@ -312,6 +267,135 @@
          <string>Value</string>
         </property>
        </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="canvasDock">
+   <property name="windowTitle">
+    <string>Screen</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="canvasDockWidget">
+    <layout class="QVBoxLayout" name="verticalLayout_5">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="Canvas" name="canvas" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>192</width>
+         <height>96</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="messagesDock">
+   <property name="windowTitle">
+    <string>Compile errors</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="messagesDockWidget">
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QTreeWidget" name="messagesTree">
+       <property name="indentation">
+        <number>0</number>
+       </property>
+       <property name="sortingEnabled">
+        <bool>true</bool>
+       </property>
+       <column>
+        <property name="text">
+         <string>Line</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Message</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="memoryDock">
+   <property name="windowTitle">
+    <string>Memory</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="memoryDockWidget">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="MemoryView" name="memoryView">
+       <property name="font">
+        <font>
+         <family>Courier</family>
+        </font>
+       </property>
+       <property name="lineWrapMode">
+        <enum>QPlainTextEdit::NoWrap</enum>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="plainText">
+        <string/>
+       </property>
+       <property name="zeroPadding" stdset="0">
+        <number>5</number>
+       </property>
+       <property name="lineStep" stdset="0">
+        <number>10</number>
+       </property>
+       <property name="zeroStart" stdset="0">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
     </layout>
@@ -535,6 +619,12 @@
    <class>MemoryView</class>
    <extends>QPlainTextEdit</extends>
    <header>memoryview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Canvas</class>
+   <extends>QWidget</extends>
+   <header>canvas.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

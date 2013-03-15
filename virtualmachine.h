@@ -52,7 +52,7 @@ class VirtualMachine : public QObject
 	public:
 		explicit VirtualMachine(QObject *parent = 0);
 
-		void assemble(const QString &code);
+		bool assemble(const QString &code, QStringList *msgs = 0);
 		bool exec();
 
 		const QVector<int> &memory() const;

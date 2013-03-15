@@ -15,5 +15,6 @@
         <file>icons/resultset_last.png</file>
         <file>icons/arrow_refresh.png</file>
         <file>icons/application-lightning.png</file>
+        <file>icons/cancel2.png</file>
     </qresource>
 </RCC>

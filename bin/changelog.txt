@@ -1,5 +1,8 @@
 * - zmiany w programie, # - zmiany w języku
 
+1.2
+* Dodano wyświetlanie błędów kompilacji
+
 1.1.5
 * Zaktualizowano pomoc w progamie (F1 - polecam!)
 * Dodano możliwość otwierania pliku przez upuszczenie go na edytor
