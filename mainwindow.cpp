@@ -59,6 +59,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_ui->vmToolBar->addWidget(m_startCellSpinBox);
 	m_ui->statusBar->addPermanentWidget(m_positionLabel);
 
+	QAction *viewMenuAction = m_ui->menuBar->insertMenu(m_ui->helpMenu->menuAction(), createPopupMenu());
+	viewMenuAction->setText(tr("&View"));
+
+
 	m_asmHighlighter = new AsmHighlighter(m_ui->codeEdit->document());
 
 	connect(m_ui->fileMenu, &QMenu::aboutToShow, this, &MainWindow::updateMruMenu);
@@ -204,9 +208,12 @@ void MainWindow::startExec()
 	if(!assemble())
 		return;
 
+	int execCell = 0;
 	while(m_virtualMachine->exec()) {
-		m_startCellSpinBox->setValue(m_virtualMachine->execCell());
-		setStartCell(m_virtualMachine->execCell());
+		execCell = m_virtualMachine->execCell();
+
+		m_startCellSpinBox->setValue(execCell);
+		setStartCell(execCell);
 
 		qApp->processEvents();
 	}

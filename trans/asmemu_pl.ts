@@ -20,13 +20,13 @@
     </message>
     <message>
         <location filename="../compiler.cpp" line="305"/>
-        <location filename="../compiler.cpp" line="360"/>
+        <location filename="../compiler.cpp" line="358"/>
         <source>%1:Invalid label name &quot;%2&quot;</source>
         <translation>%1: Niepoprawna nazwa etykiety &quot;%2&quot;</translation>
     </message>
     <message>
         <location filename="../compiler.cpp" line="310"/>
-        <location filename="../compiler.cpp" line="365"/>
+        <location filename="../compiler.cpp" line="363"/>
         <source>%1:Reserved word used &quot;%2&quot;</source>
         <translation>%1: Użyto zastrzeżonego słowa &quot;%2&quot;</translation>
     </message>
@@ -44,44 +44,44 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="71"/>
+        <location filename="../mainwindow.ui" line="348"/>
         <source>&amp;File</source>
         <translation>&amp;Plik</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="91"/>
+        <location filename="../mainwindow.ui" line="368"/>
         <source>&amp;Edit</source>
         <translation>&amp;Edycja</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="106"/>
+        <location filename="../mainwindow.ui" line="383"/>
         <source>&amp;Help</source>
         <translation>&amp;Pomoc</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="113"/>
+        <location filename="../mainwindow.ui" line="390"/>
         <source>&amp;Machine</source>
         <translation>&amp;Maszyna</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="178"/>
+        <location filename="../mainwindow.ui" line="111"/>
         <source>Registers</source>
         <translation>Rejestry</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="210"/>
-        <location filename="../mainwindow.ui" line="257"/>
+        <location filename="../mainwindow.ui" line="143"/>
+        <location filename="../mainwindow.ui" line="190"/>
         <source>Name</source>
         <translation>Nazwa</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="215"/>
-        <location filename="../mainwindow.ui" line="267"/>
+        <location filename="../mainwindow.ui" line="148"/>
+        <location filename="../mainwindow.ui" line="200"/>
         <source>Value</source>
         <translation>Wartość</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="355"/>
+        <location filename="../mainwindow.ui" line="288"/>
         <source>Memory</source>
         <translation>Pamięć</translation>
     </message>
@@ -126,47 +126,47 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="75"/>
+        <location filename="../mainwindow.ui" line="352"/>
         <source>Recent &amp;files</source>
         <translation>Ostatnio o&amp;twierane pliki</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="129"/>
+        <location filename="../mainwindow.ui" line="62"/>
         <source>Main Toolbar</source>
         <translation>Główny pasek narzędzi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="157"/>
+        <location filename="../mainwindow.ui" line="90"/>
         <source>Virtual Machine Toolbar</source>
         <translation>Pasek narzędzi maszyny</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="225"/>
+        <location filename="../mainwindow.ui" line="158"/>
         <source>Labels</source>
         <translation>Etykiety</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="262"/>
+        <location filename="../mainwindow.ui" line="195"/>
         <source>Address</source>
         <translation>Adres</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="277"/>
+        <location filename="../mainwindow.ui" line="210"/>
         <source>Screen</source>
         <translation>Ekran</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="311"/>
+        <location filename="../mainwindow.ui" line="244"/>
         <source>Compile errors</source>
         <translation>Błędy kompilacji</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="340"/>
+        <location filename="../mainwindow.ui" line="273"/>
         <source>Line</source>
         <translation>Linia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="345"/>
+        <location filename="../mainwindow.ui" line="278"/>
         <source>Message</source>
         <translation>Wiadomość</translation>
     </message>
@@ -311,69 +311,74 @@
         <translation>Komórka początkowa:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="137"/>
-        <location filename="../mainwindow.cpp" line="158"/>
+        <location filename="../mainwindow.cpp" line="63"/>
+        <source>&amp;View</source>
+        <translation>&amp;Widok</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.cpp" line="141"/>
+        <location filename="../mainwindow.cpp" line="162"/>
         <source>Assembler files (*.asm)</source>
         <translation>Pliki assemblera (*.asm)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="276"/>
-        <location filename="../mainwindow.cpp" line="518"/>
+        <location filename="../mainwindow.cpp" line="283"/>
+        <location filename="../mainwindow.cpp" line="525"/>
         <source>AsmEmu</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="276"/>
+        <location filename="../mainwindow.cpp" line="283"/>
         <source>Assembler Emulator v%1&lt;br&gt;Copyright &amp;copy; 2013 &lt;a href=&quot;mailto: arturo182@tlen.pl&quot;&gt;Artur Pacholec&lt;/a&gt;</source>
         <translation>Emulator Assemblera v%1&lt;br&gt;Copyright &amp;copy; 2013 &lt;a href=&quot;mailto: arturo182@tlen.pl&quot;&gt;Artur Pacholec&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="403"/>
+        <location filename="../mainwindow.cpp" line="410"/>
         <source>Choose language:</source>
         <translation>Wybierz język:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="403"/>
+        <location filename="../mainwindow.cpp" line="410"/>
         <source>Change language</source>
         <translation>Zmień język</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="409"/>
+        <location filename="../mainwindow.cpp" line="416"/>
         <source>Restart needed</source>
         <translation>Potrzebny restart</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="409"/>
+        <location filename="../mainwindow.cpp" line="416"/>
         <source>The language change will take effect after you restart the application.</source>
         <translation>Język zostanie aktywowany po restarcie programu.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="447"/>
+        <location filename="../mainwindow.cpp" line="454"/>
         <source>Save changes?</source>
         <translation>Zapisać zmiany?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="447"/>
+        <location filename="../mainwindow.cpp" line="454"/>
         <source>Would you like to save changes?</source>
         <translation>Czy chcesz zapisać zmiany?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="518"/>
+        <location filename="../mainwindow.cpp" line="525"/>
         <source>untitled.asm</source>
         <translation>bez nazwy.asm</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="333"/>
+        <location filename="../mainwindow.cpp" line="340"/>
         <source>Line %1 Col %2</source>
         <translation>Linia %1 Kol %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="388"/>
+        <location filename="../mainwindow.cpp" line="395"/>
         <source>Set memory size</source>
         <translation>Ustaw rozmiar pamięci</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="388"/>
+        <location filename="../mainwindow.cpp" line="395"/>
         <source>Memory size:</source>
         <translation>Rozmiar pamięci:</translation>
     </message>

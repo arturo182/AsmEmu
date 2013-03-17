@@ -57,73 +57,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>780</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="fileMenu">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <widget class="QMenu" name="recentFilesMenu">
-     <property name="title">
-      <string>Recent &amp;files</string>
-     </property>
-     <addaction name="separator"/>
-     <addaction name="clearMruAction"/>
-    </widget>
-    <addaction name="newAction"/>
-    <addaction name="openAction"/>
-    <addaction name="recentFilesMenu"/>
-    <addaction name="separator"/>
-    <addaction name="saveAction"/>
-    <addaction name="saveAsAction"/>
-    <addaction name="separator"/>
-    <addaction name="exitAction"/>
-   </widget>
-   <widget class="QMenu" name="editMenu">
-    <property name="title">
-     <string>&amp;Edit</string>
-    </property>
-    <addaction name="undoAction"/>
-    <addaction name="redoAction"/>
-    <addaction name="separator"/>
-    <addaction name="cutAction"/>
-    <addaction name="copyAction"/>
-    <addaction name="pasteAction"/>
-    <addaction name="separator"/>
-    <addaction name="selectAllAction"/>
-    <addaction name="separator"/>
-    <addaction name="changeLanguageAction"/>
-   </widget>
-   <widget class="QMenu" name="helpMenu">
-    <property name="title">
-     <string>&amp;Help</string>
-    </property>
-    <addaction name="asmHelpAction"/>
-    <addaction name="aboutAction"/>
-   </widget>
-   <widget class="QMenu" name="menuMachine">
-    <property name="title">
-     <string>&amp;Machine</string>
-    </property>
-    <addaction name="startAction"/>
-    <addaction name="singleStepAction"/>
-    <addaction name="stopAction"/>
-    <addaction name="rewindAction"/>
-    <addaction name="separator"/>
-    <addaction name="memorySizeAction"/>
-   </widget>
-   <addaction name="fileMenu"/>
-   <addaction name="editMenu"/>
-   <addaction name="menuMachine"/>
-   <addaction name="helpMenu"/>
-  </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="windowTitle">
     <string>Main Toolbar</string>
@@ -400,6 +333,73 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>780</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="recentFilesMenu">
+     <property name="title">
+      <string>Recent &amp;files</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="clearMruAction"/>
+    </widget>
+    <addaction name="newAction"/>
+    <addaction name="openAction"/>
+    <addaction name="recentFilesMenu"/>
+    <addaction name="separator"/>
+    <addaction name="saveAction"/>
+    <addaction name="saveAsAction"/>
+    <addaction name="separator"/>
+    <addaction name="exitAction"/>
+   </widget>
+   <widget class="QMenu" name="editMenu">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="undoAction"/>
+    <addaction name="redoAction"/>
+    <addaction name="separator"/>
+    <addaction name="cutAction"/>
+    <addaction name="copyAction"/>
+    <addaction name="pasteAction"/>
+    <addaction name="separator"/>
+    <addaction name="selectAllAction"/>
+    <addaction name="separator"/>
+    <addaction name="changeLanguageAction"/>
+   </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="asmHelpAction"/>
+    <addaction name="aboutAction"/>
+   </widget>
+   <widget class="QMenu" name="menuMachine">
+    <property name="title">
+     <string>&amp;Machine</string>
+    </property>
+    <addaction name="startAction"/>
+    <addaction name="singleStepAction"/>
+    <addaction name="stopAction"/>
+    <addaction name="rewindAction"/>
+    <addaction name="separator"/>
+    <addaction name="memorySizeAction"/>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="editMenu"/>
+   <addaction name="menuMachine"/>
+   <addaction name="helpMenu"/>
   </widget>
   <action name="newAction">
    <property name="icon">
