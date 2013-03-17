@@ -130,7 +130,7 @@ int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, co
 			static QMap<VirtualMachine::Instruction, QList<int> > varMap(std::map<VirtualMachine::Instruction, QList<int> >(
 			{
 				{ VirtualMachine::POP,  {9610, 9620, 300, 9630, 9640, 9650, 9660} },
-				{ VirtualMachine::PUSH, {9740, 9720, 400, 9730, 9740, 9750, 9760} },
+				{ VirtualMachine::PUSH, {9710, 9720, 400, 9730, 9740, 9750, 9760} },
 			}));
 
 			const QList<int> varList = varMap.value(instr);

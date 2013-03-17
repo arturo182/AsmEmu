@@ -62,7 +62,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	QAction *viewMenuAction = m_ui->menuBar->insertMenu(m_ui->helpMenu->menuAction(), createPopupMenu());
 	viewMenuAction->setText(tr("&View"));
 
-
 	m_asmHighlighter = new AsmHighlighter(m_ui->codeEdit->document());
 
 	connect(m_ui->fileMenu, &QMenu::aboutToShow, this, &MainWindow::updateMruMenu);

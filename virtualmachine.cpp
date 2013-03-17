@@ -315,7 +315,7 @@ bool VirtualMachine::exec()
 		}
 		break;
 
-		case HLT: //HLT
+		case HLT:
 		default:
 			++m_execCell;
 			theEnd = true;
