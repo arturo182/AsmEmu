@@ -3,7 +3,9 @@
 
 #include <QObject>
 #include <QVector>
-#include <QMap>
+#include <QHash>
+
+class Screen;
 
 class VirtualMachine : public QObject
 {
@@ -16,6 +18,7 @@ class VirtualMachine : public QObject
 			SP,
 			SB,
 			IP,
+			DI,
 			FLAGS
 		};
 
@@ -29,20 +32,43 @@ class VirtualMachine : public QObject
 		enum Instruction
 		{
 			HLT = 0,
-			INC,
-			DEC,
-			CALL,
+
+			//indexes
 			CPA,
 			STO,
+			RSI,
+
+			//arithmetic
 			ADD,
 			SUB,
+			MUL,
+
+			//branching
 			BRA,
 			BRN,
-			MUL,
 			BRZ,
+			BROF,
+			BRNF,
+			BRZF,
+
+			//helpers
+			INC,
+			DEC,
+
+			//stack
 			POP,
 			PUSH,
-			RET
+
+			//subroutines
+			RET,
+			CALL,
+
+			//screen
+			SCRX,
+			SCRY,
+			SCRF,
+			SCRB,
+			SCR
 		};
 
 	public:
@@ -50,7 +76,7 @@ class VirtualMachine : public QObject
 		static int intToMemory(const int &val);
 
 	public:
-		explicit VirtualMachine(QObject *parent = 0);
+		explicit VirtualMachine(Screen *screen, QObject *parent = 0);
 
 		bool assemble(const QString &code, QStringList *msgs = 0);
 		bool exec();
@@ -86,12 +112,15 @@ class VirtualMachine : public QObject
 		void labelsChanged();
 
 	private:
+		int &addressFor(const int &aa, const int &xxxx);
+		int valueFor(const int &aa, const int &xxxx);
 		void updateFlags(const int &intVal);
 
 	private:
-		QMap<QString, int> m_labels;
+		QHash<QString, int> m_labels;
 		QVector<int> m_registers;
 		QVector<int> m_memory;
+		Screen *m_screen;
 		int m_execCell;
 };
 

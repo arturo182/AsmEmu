@@ -15,7 +15,7 @@ SOURCES  += main.cpp \
             virtualmachine.cpp \
             compiler.cpp \
     evaluator.cpp \
-    canvas.cpp
+    screen.cpp
 
 HEADERS  += mainwindow.h \
             asmhighlighter.h \
@@ -25,7 +25,7 @@ HEADERS  += mainwindow.h \
             contants.h \
             compiler.h \
     evaluator.h \
-    canvas.h
+    screen.h
 
 FORMS     = mainwindow.ui
 

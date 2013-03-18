@@ -15,6 +15,7 @@
 #include <QTextStream>
 #include <QSettings>
 #include <QSpinBox>
+#include <QTimer>
 #include <QDebug>
 #include <QLabel>
 
@@ -48,12 +49,14 @@ MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
 	m_mruMapper(new QSignalMapper(this)),
-	m_virtualMachine(new VirtualMachine(this)),
 	m_startCellSpinBox(new QSpinBox(this)),
-	m_positionLabel(new QLabel(this))
+	m_positionLabel(new QLabel(this)),
+	m_compiler(new Compiler("", this))
 {
 	m_ui->setupUi(this);
 	m_ui->canvasDock->hide();
+
+	m_virtualMachine = new VirtualMachine(m_ui->canvas, this);
 
 	m_ui->vmToolBar->addWidget(new QLabel(tr("Start cell: "), this));
 	m_ui->vmToolBar->addWidget(m_startCellSpinBox);
@@ -68,6 +71,21 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	void (QSignalMapper:: *mapped)(const QString &) = &QSignalMapper::mapped;
 	connect(m_mruMapper, mapped, this, &MainWindow::loadFile);
+
+	connect(&m_tickTimer, &QTimer::timeout, [&]()
+	{
+		const bool isRunning = m_virtualMachine->exec();
+		int execCell = m_virtualMachine->execCell();
+
+		m_startCellSpinBox->setValue(execCell);
+		setStartCell(execCell);
+
+		if(!isRunning) {
+			m_tickTimer.stop();
+			m_ui->stopAction->setEnabled(false);
+			m_ui->rewindAction->setEnabled(true);
+		}
+	});
 
 	connect(m_virtualMachine, &VirtualMachine::registersChanged, this, &MainWindow::updateRegisters);
 	connect(m_virtualMachine, &VirtualMachine::labelsChanged, this, &MainWindow::updateLabels);
@@ -180,7 +198,10 @@ bool MainWindow::assemble()
 	foreach(const QString &message, msgs) {
 		QTreeWidgetItem *messageItem = new QTreeWidgetItem(m_ui->messagesTree);
 		messageItem->setIcon(0, QIcon(":/icons/cancel2.png"));
-		messageItem->setText(0, message.mid(0, message.indexOf(':')));
+
+		if(!message.startsWith('-'))
+			messageItem->setText(0, message.mid(0, message.indexOf(':')));
+
 		messageItem->setText(1, message.mid(message.indexOf(':') + 1));
 	}
 
@@ -207,18 +228,7 @@ void MainWindow::startExec()
 	if(!assemble())
 		return;
 
-	int execCell = 0;
-	while(m_virtualMachine->exec()) {
-		execCell = m_virtualMachine->execCell();
-
-		m_startCellSpinBox->setValue(execCell);
-		setStartCell(execCell);
-
-		qApp->processEvents();
-	}
-
-	m_ui->stopAction->setEnabled(false);
-	m_ui->rewindAction->setEnabled(true);
+	m_tickTimer.start(0);
 }
 
 void MainWindow::singleExec()
@@ -261,6 +271,7 @@ void MainWindow::rewindExec()
 	m_virtualMachine->setMemory(m_prevMemory);
 	m_virtualMachine->setRegisters(m_prevRegisters);
 	m_startCellSpinBox->setValue(m_prevStartCell);
+	m_ui->canvas->reset();
 
 	m_ui->codeEdit->setReadOnly(false);
 	m_asmHighlighter->setEnabled(true);
@@ -284,6 +295,11 @@ void MainWindow::about()
 
 void MainWindow::documentWasModified()
 {
+	if(m_compiler->code() != m_ui->codeEdit->toPlainText()) {
+		m_compiler->setCode(m_ui->codeEdit->toPlainText());
+		m_compiler->compile();
+	}
+
 	setWindowModified(m_ui->codeEdit->document()->isModified());
 	setStartCell(m_startCellSpinBox->value());
 }
@@ -368,10 +384,7 @@ void MainWindow::clearMru()
 
 void MainWindow::setStartLine(const int &lineNo)
 {
-	Compiler compiler(m_ui->codeEdit->toPlainText());
-	compiler.compile();
-
-	const int cellNo = compiler.lineMap().value(lineNo);
+	const int cellNo = m_compiler->lineToCell(lineNo);
 
 	m_startCellSpinBox->setValue(cellNo);
 	m_ui->codeEdit->setSpecialLine(lineNo);
@@ -381,10 +394,8 @@ void MainWindow::setStartCell(const int &cellNo)
 {
 	m_ui->codeEdit->setSpecialLine(-1);
 
-	Compiler compiler(m_ui->codeEdit->toPlainText());
-	compiler.compile();
+	const int lineNo = m_compiler->cellToLine(cellNo);
 
-	const int lineNo = compiler.lineMap().key(cellNo);
 	m_ui->codeEdit->setSpecialLine(lineNo);
 }
 
@@ -472,9 +483,10 @@ void MainWindow::loadFile(const QString &fileName)
 	m_ui->codeEdit->setPlainText(in.readAll());
 	file.close();
 
-	Compiler compiler(m_ui->codeEdit->toPlainText());
-	compiler.compile();
-	m_startCellSpinBox->setValue(compiler.startCell());
+	m_compiler->setCode(m_ui->codeEdit->toPlainText());
+	m_compiler->compile();
+	qDebug() << m_compiler->startCell();
+	m_startCellSpinBox->setValue(m_compiler->startCell());
 
 	setCurrentFile(fileName);
 }

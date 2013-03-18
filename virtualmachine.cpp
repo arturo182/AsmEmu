@@ -1,15 +1,16 @@
 #include "virtualmachine.h"
 
 #include "compiler.h"
+#include "screen.h"
 
 #include <QRegularExpression>
 #include <QProgressDialog>
 #include <QApplication>
 #include <QStringList>
+#include <QMessageBox>
 #include <QRegExp>
 #include <QDebug>
 #include <QMap>
-#include <QMessageBox>
 
 int VirtualMachine::memoryToInt(const int &mem)
 {
@@ -22,28 +23,27 @@ int VirtualMachine::memoryToInt(const int &mem)
 int VirtualMachine::intToMemory(const int &val)
 {
 	int bounded = val;
-	if(bounded > 999)
+	while(bounded > 999)
 		bounded -= 999;
 
-	if(bounded < -999)
+	while(bounded < -999)
 		bounded += 999;
 
 	return(bounded >= 0) ? bounded : -bounded + 1000;
 }
 
-VirtualMachine::VirtualMachine(QObject *parent) :
+VirtualMachine::VirtualMachine(Screen *screen, QObject *parent) :
 	QObject(parent),
+	m_screen(screen),
 	m_execCell(0)
 {
 	setMemorySize(100);
-	setRegisterCount(5);
+	setRegisterCount(6);
 }
 
 bool VirtualMachine::assemble(const QString &code, QStringList *msgs)
 {
 	Compiler compiler(code);
-	compiler.compile();
-
 	connect(&compiler, &Compiler::memoryChanged, [=](const int &cellNo, const int &value)
 	{
 		if(cellNo < 0 || cellNo >= m_memory.size())
@@ -57,6 +57,7 @@ bool VirtualMachine::assemble(const QString &code, QStringList *msgs)
 		return false;
 
 	m_labels = compiler.labelMap();
+	emit memoryChanged(m_memory);
 	emit labelsChanged();
 
 	return true;
@@ -73,113 +74,48 @@ bool VirtualMachine::exec()
 	if((m_execCell > m_memory.size() - 1) || (m_execCell < 0))
 		return false;
 
+	m_registers[IP] = m_execCell;
 	m_registers[SB] = m_memory.size() - 1;
 
 	if(m_registers[SP] == 0)
 		m_registers[SP] = m_registers[SB];
 
-	const int kilo = m_memory[m_execCell] / 1000;
-	const int hecto = m_memory[m_execCell] / 100 % 10;
-	const int deca = m_memory[m_execCell] / 10 % 10;
+	//OO AA XXXX
+	const int value = m_memory[m_execCell];
+	const int oo = value / 1000000;
+	const int aa = value / 10000 - oo * 100;
+	const int xxxx = value - oo * 1000000 - aa * 10000;
 
-	const int v100 = m_memory[m_execCell] - kilo * 1000;
-	const int v10 = v100 - hecto * 100;
-	const int v1 = v10 - 10 * deca;
-
-	int value = -1;
-
-	Instruction instr = HLT;
-	bool isConst = false;
 	bool theEnd = false;
 
-	if(kilo == 0) {
-		static QList<Instruction> k0List = { HLT, INC, DEC, POP, PUSH, CALL, RET };
-
-		instr = k0List.value(hecto);
-		value = v10;
-	} else if(kilo >= 1 && kilo <= 8) {
-		static QList<Instruction> k18List = { HLT, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ };
-
-		instr = k18List.value(kilo);
-		value = v100;
-	} else if(kilo == 9) {
-		static QList<Instruction> k9List = { INC, CPA, STO, ADD, SUB, BRA, BRN, MUL, BRZ, DEC };
-
-		instr = k9List.value(deca);
-
-		if(hecto == 0) {
-			++m_execCell;
-			value = m_memory[m_execCell];
-		} else if(hecto == 1) {
-			isConst = true;
-			value = v1;
-		} else if(hecto == 2) {
-			isConst = true;
-			++m_execCell;
-			value = m_memory[m_execCell];
-		} else if(hecto == 3) {
-			value = m_memory.value(v1);
-		} else if(hecto == 4) {
-			++m_execCell;
-			value = memoryToInt(m_memory[m_execCell]);
-			value = m_memory.value(value);
-		} else if(hecto == 5) {
-			if(deca == 0) {
-				value = m_memory.value(v1);
-			} else if(deca == 1) {
-				++m_execCell;
-				value = memoryToInt(m_memory[m_execCell]);
-				value = m_memory.value(value);
-			} else if(deca == 2) {
-				++m_execCell;
-				value = m_memory[m_execCell];
-			}
-		} else if(hecto == 6 || hecto == 7) {
-			instr = (hecto == 6) ? POP : PUSH;
-
-			if(deca == 1) {
-				isConst = true;
-				value = v1;
-			} else if(deca == 2) {
-				isConst = true;
-				++m_execCell;
-				value = m_memory[m_execCell];
-			} else if(deca == 3) {
-				value = m_memory.value(v1);
-			} else if(deca == 4) {
-				++m_execCell;
-				value = memoryToInt(m_memory[m_execCell]);
-				value = m_memory.value(value);
-			} else if(deca == 5) {
-				value = v1;
-			} else if(deca == 6) {
-				++m_execCell;
-				value = m_memory[m_execCell];
-			}
-		}
-	}
-
-	switch(instr) {
+	switch(oo) {
 		case CPA:
 		{
-			m_registers[AX] = isConst ? value : m_memory.value(value);
+			m_registers[AX] = valueFor(aa, xxxx);
+
 			++m_execCell;
 		}
 		break;
 
 		case STO:
 		{
-			if(value > m_memory.size() - 1)
-				return false;
+			addressFor(aa, xxxx) = m_registers[AX];
 
-			m_memory[value] = m_registers[AX];
+			++m_execCell;
+		}
+		break;
+
+		case RSI:
+		{
+			m_registers[DI] = 0;
+
 			++m_execCell;
 		}
 		break;
 
 		case ADD:
 		{
-			const int intVal = memoryToInt(m_registers[AX]) + memoryToInt(isConst ? value : m_memory.value(value));
+			const int intVal = memoryToInt(m_registers[AX]) + memoryToInt(valueFor(aa, xxxx));
 			m_registers[AX] = intToMemory(intVal);
 
 			updateFlags(intVal);
@@ -189,7 +125,17 @@ bool VirtualMachine::exec()
 
 		case SUB:
 		{
-			const int intVal = memoryToInt(m_registers[AX]) - memoryToInt(isConst ? value : m_memory.value(value));
+			const int intVal = memoryToInt(m_registers[AX]) - memoryToInt(valueFor(aa, xxxx));
+			m_registers[AX] = intToMemory(intVal);
+
+			updateFlags(intVal);
+			++m_execCell;
+		}
+		break;
+
+		case MUL:
+		{
+			const int intVal = memoryToInt(m_registers[AX]) * memoryToInt(valueFor(aa, xxxx));
 			m_registers[AX] = intToMemory(intVal);
 
 			updateFlags(intVal);
@@ -199,48 +145,59 @@ bool VirtualMachine::exec()
 
 		case BRA:
 		{
-			m_execCell = value;
+			m_execCell =  (aa == 0) ? memoryToInt(xxxx) : memoryToInt(valueFor(aa, xxxx));
 		}
 		break;
 
 		case BRN:
 		{
-			if(memoryToInt(m_registers[AX]) < 0) {
-				m_execCell = value;
-			} else {
-				++m_execCell;
-			}
-		}
-		break;
+			const int targetCell = (aa == 0) ? memoryToInt(xxxx) : memoryToInt(valueFor(aa, xxxx));
 
-		case MUL:
-		{
-			const int intVal = memoryToInt(m_registers[AX]) * memoryToInt(isConst ? value : m_memory.value(value));
-			m_registers[AX] = intToMemory(intVal);
-
-			updateFlags(intVal);
-			++m_execCell;
+			m_execCell = (memoryToInt(m_registers[AX]) < 0) ? targetCell : m_execCell + 1;
 		}
 		break;
 
 		case BRZ:
 		{
-			if(memoryToInt(m_registers[AX]) == 0) {
-				m_execCell = value;
-			} else {
-				++m_execCell;
-			}
+			const int targetCell = (aa == 0) ? memoryToInt(xxxx) : memoryToInt(valueFor(aa, xxxx));
+
+			m_execCell = (memoryToInt(m_registers[AX]) == 0) ? targetCell : m_execCell + 1;
+		}
+		break;
+
+		case BROF:
+		{
+			const bool overflowFlag = m_registers[FLAGS] / OF % 10;
+
+			const int targetCell = (aa == 0) ? memoryToInt(xxxx) : memoryToInt(valueFor(aa, xxxx));
+			m_execCell = overflowFlag ? targetCell : m_execCell + 1;
+		}
+		break;
+
+		case BRNF:
+		{
+			const bool negativeFlag = m_registers[FLAGS] / NF % 10;
+			const int targetCell = (aa == 0) ? memoryToInt(xxxx) : memoryToInt(valueFor(aa, xxxx));
+
+			m_execCell = negativeFlag ? targetCell : m_execCell + 1;
+		}
+		break;
+
+		case BRZF:
+		{
+			const bool zeroFlag = m_registers[FLAGS] / ZF % 10;
+			const int targetCell = (aa == 0) ? memoryToInt(xxxx) : memoryToInt(valueFor(aa, xxxx));
+
+			m_execCell = zeroFlag ? targetCell : m_execCell + 1;
 		}
 		break;
 
 		case INC:
 		{
-			if(value > -1) {
-				const int intVal = memoryToInt(m_memory.value(value)) + 1;
-				m_memory[value] = intToMemory(intVal);
+			const int intVal = memoryToInt(valueFor(aa, xxxx)) + 1;
+			addressFor(aa, xxxx) = intToMemory(intVal);
 
-				updateFlags(intVal);
-			}
+			updateFlags(intVal);
 
 			++m_execCell;
 		}
@@ -248,12 +205,10 @@ bool VirtualMachine::exec()
 
 		case DEC:
 		{
-			if(value > -1) {
-				const int intVal = memoryToInt(m_memory.value(value)) - 1;
-				m_memory[value] = intToMemory(intVal);
+			const int intVal = memoryToInt(valueFor(aa, xxxx)) - 1;
+			addressFor(aa, xxxx) = intToMemory(intVal);
 
-				updateFlags(intVal);
-			}
+			updateFlags(intVal);
 
 			++m_execCell;
 		}
@@ -265,12 +220,7 @@ bool VirtualMachine::exec()
 				m_registers[SP] = intToMemory(memoryToInt(m_registers[SP]) + 1);
 
 			const int intVal = memoryToInt(m_registers[SP]);
-
-			if(kilo == 0) {
-				m_registers[AX] = m_memory[intVal];
-			} else {
-				m_memory[value] = m_memory[intVal];
-			}
+			addressFor(aa, xxxx) = m_memory[intVal];
 
 			++m_execCell;
 		}
@@ -279,14 +229,7 @@ bool VirtualMachine::exec()
 		case PUSH:
 		{
 			const int stackPos = memoryToInt(m_registers[SP]);
-
-			if(kilo == 0) {
-				m_memory[stackPos] = m_registers[AX];
-			} else if(isConst) {
-				m_memory[stackPos] = value;
-			} else {
-				m_memory[stackPos] = m_memory[value];
-			}
+			m_memory[stackPos] = valueFor(aa, xxxx);
 
 			m_registers[SP] = intToMemory(stackPos - 1);
 
@@ -301,7 +244,8 @@ bool VirtualMachine::exec()
 
 			m_registers[SP] = intToMemory(stackPos - 1);
 
-			m_execCell = value;
+			const int targetCell = (aa == 0) ? memoryToInt(xxxx) : memoryToInt(valueFor(aa, xxxx));
+			m_execCell = targetCell;
 		}
 		break;
 
@@ -315,15 +259,51 @@ bool VirtualMachine::exec()
 		}
 		break;
 
+		case SCRX:
+		{
+			m_screen->setCol(valueFor(aa, xxxx));
+
+			++m_execCell;
+		}
+		break;
+
+		case SCRY:
+		{
+			m_screen->setRow(valueFor(aa, xxxx));
+
+			++m_execCell;
+		}
+		break;
+
+		case SCRF:
+		{
+			m_screen->setFore(valueFor(aa, xxxx));
+
+			++m_execCell;
+		}
+		break;
+
+		case SCRB:
+		{
+			m_screen->setBack(valueFor(aa, xxxx));
+
+			++m_execCell;
+		}
+		break;
+
+		case SCR:
+		{
+			m_screen->setChar(valueFor(aa, xxxx));
+
+			++m_execCell;
+		}
+		break;
+
 		case HLT:
 		default:
-			++m_execCell;
 			theEnd = true;
 		break;
 	}
-
-	//set instruction pointer
-	m_registers[IP] = m_execCell;
 
 	emit memoryChanged(m_memory);
 	emit registersChanged();
@@ -397,6 +377,10 @@ QString VirtualMachine::registerName(const int &registerNo) const
 
 		case IP:
 			return "IP";
+		break;
+
+		case DI:
+			return "DI";
 		break;
 
 		case FLAGS:
@@ -488,4 +472,71 @@ void VirtualMachine::updateFlags(const int &intVal)
 	const bool isOverflowed = (intVal > 999 || intVal < -999);
 	m_registers[FLAGS] += (isOverflowed && !overflowFlag) ? OF : ((!isOverflowed && overflowFlag) ? -OF : 0);
 
+}
+
+int &VirtualMachine::addressFor(const int &aa, const int &xxxx)
+{
+	const int xxxxInt = memoryToInt(xxxx);
+
+	switch(aa) {
+		case 0:
+			return m_memory[xxxxInt];
+		break;
+
+		case 1:
+			return m_memory[m_memory[xxxxInt]];
+		break;
+
+		case 3:
+			return m_registers[AX];
+		break;
+
+		case 4:
+			return m_registers[IP];
+		break;
+
+		case 5:
+			return m_registers[SP];
+		break;
+
+		case 6:
+			return m_registers[SB];
+		break;
+
+		case 7:
+			return m_registers[DI];
+		break;
+
+		case 8:
+			return m_memory[m_registers[AX] + memoryToInt(xxxx)];
+		break;
+
+		case 9:
+			return m_memory[m_registers[IP] + memoryToInt(xxxx)];
+		break;
+
+		case 10:
+			return m_memory[m_registers[SP] + memoryToInt(xxxx)];
+		break;
+
+		case 11:
+			return m_memory[m_registers[SB] + memoryToInt(xxxx)];
+		break;
+
+		case 12:
+			return m_memory[m_registers[DI] + memoryToInt(xxxx)];
+		break;
+
+		case 2:
+			qDebug() << "No address for constant!";
+		break;
+	}
+}
+
+int VirtualMachine::valueFor(const int &aa, const int &xxxx)
+{
+	if(aa == 2) //const
+		return memoryToInt(xxxx);
+
+	return addressFor(aa, xxxx);
 }

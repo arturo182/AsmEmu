@@ -12,6 +12,9 @@ MemoryView::MemoryView(QWidget *parent) :
 
 void MemoryView::setMemory(const QVector<int> &memory)
 {
+	if(m_memory == memory)
+		return;
+
 	m_memory = memory;
 
 	resizeEvent(new QResizeEvent(QSize(), QSize()));
@@ -34,9 +37,9 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 	m_updating = true;
 
 	const int contentWidth = viewport()->width() - m_gutter->prefferedWidth();
-	int cellCount = contentWidth / fontMetrics().width("     ");
+	int cellCount = contentWidth / fontMetrics().width("         ");
 
-	if(cellCount * fontMetrics().width("     ") + fontMetrics().width("    ") <= contentWidth)
+	if(cellCount * fontMetrics().width("         ") + fontMetrics().width("       ") <= contentWidth)
 		cellCount += 1;
 
 	setLineStep(cellCount + 1);
@@ -44,7 +47,7 @@ void MemoryView::resizeEvent(QResizeEvent *event)
 	QString content;
 	int j = 0;
 	for(int i = 0; i < m_memory.size(); ++i) {
-		content += QString::number(m_memory[i]).rightJustified(4, ' ');
+		content += QString::number(m_memory[i]).rightJustified(8, ' ');
 
 		++j;
 

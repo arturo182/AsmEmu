@@ -1,20 +1,23 @@
-#include "canvas.h"
+#include "screen.h"
 
 #include <QPainter>
 #include <qmath.h>
 #include <QDebug>
+#include <QTimer>
 #include <QMap>
 
-const QMap<Canvas::Color, QColor> colorMap(std::map<Canvas::Color, QColor>({
-																			   { Canvas::Black, Qt::black },
-																			   { Canvas::Red, Qt::red },
-																			   { Canvas::Green, Qt::green },
-																			   { Canvas::Blue, Qt::blue },
-																			   { Canvas::Cyan, Qt::cyan },
-																			   { Canvas::Magenta, Qt::magenta },
-																			   { Canvas::Yellow, Qt::yellow },
-																			   { Canvas::White, Qt::white }
-																		   }));
+const QMap<Screen::Color, QColor> colorMap(
+	std::map<Screen::Color, QColor>({
+		{ Screen::Black,	Qt::black },
+		{ Screen::Red,		Qt::red },
+		{ Screen::Green,	Qt::green },
+		{ Screen::Blue,		Qt::blue },
+		{ Screen::Cyan,		Qt::cyan },
+		{ Screen::Magenta,	Qt::magenta },
+		{ Screen::Yellow,	Qt::yellow },
+		{ Screen::White,	Qt::white }
+	}
+));
 
 static int cols = 32;
 const int rows = 12;
@@ -890,81 +893,82 @@ const unsigned char pixelFont[] =
 		0b00000000
 };
 
-Canvas::Canvas(QWidget *parent) :
+Screen::Screen(QWidget *parent) :
 	QWidget(parent),
 	m_back(Black),
 	m_fore(White),
 	m_col(0),
 	m_row(0)
 {
-	for(int i = 0; i < cols * rows; ++i)
-		m_buffer << Char(White, Black, ' ');
-
-	setRow(0);
-	setCol(0); setChar('a');
-	setCol(1); setChar('r');
-	setCol(2); setChar('t');
-	setCol(3); setChar('u');
-	setCol(4); setChar('r');
-	setCol(5); setChar('o');
-	setCol(6); setChar(' ');
-	setCol(7); setChar('1');
-	setCol(8); setChar('8');
-	setCol(9); setChar('2');
-
-	setRow(1);
-	setBack(Blue); setFore(Yellow);
-	setCol(0); setChar('H');
-	setCol(1); setChar('e');
-	setCol(2); setChar('l');
-	setCol(3); setChar('l');
-	setCol(4); setChar('o');
-
-	setBack(Black); setFore(Black);
-	setCol(5); setChar(' ');
-
-	setBack(White); setFore(Red);
-	setCol(6); setChar('W');
-	setCol(7); setChar('o');
-	setCol(8); setChar('r');
-	setCol(9); setChar('l');
-	setCol(10); setChar('d');
-	setCol(11); setChar('!');
+	reset();
 
 	setMinimumSize(cols * charWidth * scale, rows * charHeight * scale);
 }
 
-void Canvas::setBack(const int &back)
+void Screen::setBack(const int &back)
 {
 	m_back = static_cast<Color>(back);
 }
 
-void Canvas::setFore(const int &fore)
+void Screen::setFore(const int &fore)
 {
 	m_fore = static_cast<Color>(fore);
 }
 
-void Canvas::setCol(const int &col)
+void Screen::setCol(const int &col)
 {
 	m_col = col;
 }
 
-void Canvas::setRow(const int &row)
+void Screen::setRow(const int &row)
 {
 	m_row = row;
 }
 
-void Canvas::setChar(const char &ch)
+void Screen::setChar(const char &ch)
 {
 	const int idx = m_row * cols + m_col;
+
+	if(idx > m_buffer.size())
+		return;
+
+	if(ch == '\n') {
+		m_col = 0;
+		++m_row;
+
+		return;
+	}
+
 	m_buffer[idx].fore = m_fore;
 	m_buffer[idx].back = m_back;
 	m_buffer[idx].ch = (ch < ' ' || ch > '~') ? ' ' : ch;
 
+	if(m_col == cols) {
+		++m_row;
+
+		m_col = 0;
+	}
+
+	++m_col;
+
 	update();
 }
 
-void Canvas::paintEvent(QPaintEvent *event)
+void Screen::reset()
+{
+	m_back = Black;
+	m_fore = White;
+	m_col = 0;
+	m_row = 0;
+
+	m_buffer.clear();
+	for(int i = 0; i < cols * rows; ++i)
+		m_buffer << Char(White, Black, ' ');
+
+	update();
+}
+
+void Screen::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
 	painter.setPen(Qt::transparent);

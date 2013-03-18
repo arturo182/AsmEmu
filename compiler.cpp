@@ -6,82 +6,79 @@
 #include <QRegularExpression>
 #include <QDebug>
 
-const QMap<QString, VirtualMachine::Instruction> mnemonicMap(std::map<QString, VirtualMachine::Instruction>({
-																												{"HLT", VirtualMachine::HLT},
-																												{"INC", VirtualMachine::INC},
-																												{"DEC", VirtualMachine::DEC},
-																												{"CPA", VirtualMachine::CPA},
-																												{"STO", VirtualMachine::STO},
-																												{"ADD", VirtualMachine::ADD},
-																												{"SUB", VirtualMachine::SUB},
-																												{"BRA", VirtualMachine::BRA},
-																												{"BRN", VirtualMachine::BRN},
-																												{"MUL", VirtualMachine::MUL},
-																												{"BRZ", VirtualMachine::BRZ},
-																												{"POP", VirtualMachine::POP},
-																												{"PUSH", VirtualMachine::PUSH},
-																												{"CALL", VirtualMachine::CALL},
-																												{"RET", VirtualMachine::RET}
-																											}));
-
-
-bool isValidLabel(const QString &label)
+struct InstructionDefine
 {
-	const QRegularExpression labelPattern("^[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*$", QRegularExpression::CaseInsensitiveOption);
-	const QRegularExpressionMatch match = labelPattern.match(label);
+	int code;
+	int operands;
+};
 
-	return match.hasMatch();
+const QMap<QString, InstructionDefine> mnemonicMap(
+		std::map<QString, InstructionDefine>({
+			{ "HLT",  { VirtualMachine::HLT,  0 } },
+
+			{ "CPA",  { VirtualMachine::CPA,  1 } },
+			{ "STO",  { VirtualMachine::STO,  1 } },
+			{ "RSI",  { VirtualMachine::RSI,  0 } },
+
+			{ "ADD",  { VirtualMachine::ADD,  1 } },
+			{ "SUB",  { VirtualMachine::SUB,  1 } },
+			{ "MUL",  { VirtualMachine::MUL,  1 } },
+
+			{ "BRA",  { VirtualMachine::BRA,  1 } },
+			{ "BRN",  { VirtualMachine::BRN,  1 } },
+			{ "BRZ",  { VirtualMachine::BRZ,  1 } },
+			{ "BROF", { VirtualMachine::BRA,  1 } },
+			{ "BRNF", { VirtualMachine::BRN,  1 } },
+			{ "BRZF", { VirtualMachine::BRZ,  1 } },
+
+			{ "INC",  { VirtualMachine::INC,  1 } },
+			{ "DEC",  { VirtualMachine::DEC,  1 } },
+
+			{ "POP",  { VirtualMachine::POP,  0 } },
+			{ "PUSH", { VirtualMachine::PUSH, 0 } },
+
+			{ "CALL", { VirtualMachine::CALL, 1 } },
+			{ "RET",  { VirtualMachine::RET,  0 } },
+
+			//screen (unofficial)
+			{ "SCRX", { VirtualMachine::SCRX, 1 } },
+			{ "SCRY", { VirtualMachine::SCRY, 1 } },
+			{ "SCRF", { VirtualMachine::SCRF, 1 } },
+			{ "SCRB", { VirtualMachine::SCRB, 1 } },
+			{ "SCR",  { VirtualMachine::SCR,  1 } },
+
+			// pseudo instruction for direct memory assignment
+			{ "DAT",  { -1,					  0 } }
+		})
+);
+
+const QStringList registerList = { "AX", "IP", "SP", "SB", "DI" };
+
+const QRegularExpression labelPattern("^[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*$", QRegularExpression::CaseInsensitiveOption);
+
+bool isWhitespace(const QChar &c)
+{
+	static QList<QChar> chars = { '\n', '\r', '\t', ' ', ',' };
+
+	return chars.contains(c);
 }
 
-bool isKeyword(const QString &label)
+Compiler::Compiler(const QString &code, QObject *parent) :
+	QObject(parent),
+	m_startCell(-1),
+	m_code(code)
 {
-	static QStringList keywords = {
-		"AX", "SP", "SB", "IP", "FLAGS",			//registers
-		"HLT", "INC", "DEC", "CPA", "STO", "ADD",	//mnemonics
-		"SUB", "BRA", "BRN", "MUL", "BRZ", "PUSH",
-		"POP", "CALL", "RET"
-	};
 
-	return keywords.contains(label.toUpper());
 }
 
-Compiler::Compiler(const QString &code)
+
+QHash<QString, int> Compiler::labelMap() const
 {
-	m_lines = code.split('\n', QString::KeepEmptyParts);
+	QHash<QString, int> fixed;
+	foreach(const QString &name, m_labelMap.keys())
+		fixed.insert(name, m_addressMap.key(m_labelMap[name]));
 
-	const QRegularExpression labelPattern("^\\s?([a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*:)\\s?$", QRegularExpression::CaseInsensitiveOption);
-	const QRegularExpression pointerPattern("\\[.*\\]");
-
-	for(int i = 0; i < m_lines.size(); ++i) {
-		//strip comments
-		m_lines[i].replace(QRegularExpression(";(.*)$"), "");
-
-		//trim whitespace
-		m_lines[i].replace(QRegularExpression("\\s+"), " ");
-		m_lines[i] = m_lines[i].trimmed();
-
-		//remove whitespace in pointer expressions
-		QRegularExpressionMatch pointerMatch = pointerPattern.match(m_lines[i]);
-		if(pointerMatch.hasMatch()) {
-			const QString cleared = pointerMatch.captured().remove(QRegularExpression("\\s+"));
-			m_lines[i].replace(pointerMatch.captured(), cleared);
-		}
-
-		//move single labels to next lines
-		QRegularExpressionMatch labelMatch = labelPattern.match(m_lines[i]);
-		if(labelMatch.hasMatch() && i < m_lines.size() - 1)
-			m_lines[i + 1].prepend(labelMatch.captured(1) + " ");
-	}
-}
-
-const QMap<int, int> &Compiler::lineMap() const
-{
-	return m_lineMap;
-}
-
-const QMap<QString, int> &Compiler::labelMap() const
-{
-	return m_labelMap;
+	return fixed;
 }
 
 int Compiler::startCell() const
@@ -89,398 +86,437 @@ int Compiler::startCell() const
 	return m_startCell;
 }
 
-int Compiler::assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue, QString *error)
+int Compiler::cellToLine(const int &cellNo)
 {
-	if(!mnemonicMap.contains(mnemonic.toUpper())) {
-		if(error) *error = tr("Invalid mnemonic \"%1\"").arg(mnemonic.toUpper());
-		return -1;
-	}
-
-	const VirtualMachine::Instruction instr = mnemonicMap.value(mnemonic.toUpper());
-	const bool isConst = strValue.contains('$');
-	const bool isPointer = strValue.contains('[');
-
-	if((isPointer && !strValue.contains(']')) || (!isPointer && strValue.contains(']'))) {
-		if(error) *error = tr("Pointer symbol missing");
-		return -1;
-	}
-
-	int value = QString(strValue).remove(QRegularExpression("\\$|\\[|\\]")).toInt();
-	if(isPointer)
-		value = evalExpression(QString(strValue).remove(QRegularExpression("\\[|\\]")));
-
-	switch(instr) {
-		case VirtualMachine::HLT:
-		case VirtualMachine::RET:
-		{
-			static QMap<VirtualMachine::Instruction, int> varMap(std::map<VirtualMachine::Instruction, int>(
-			{
-				{ VirtualMachine::HLT,    0 },
-				{ VirtualMachine::RET,  600 }
-			}));
-
-			emit memoryChanged(cellNo, varMap.value(instr));
-			return 1;
-		}
-		break;
-
-		case VirtualMachine::POP:
-		case VirtualMachine::PUSH:
-		{
-			static QMap<VirtualMachine::Instruction, QList<int> > varMap(std::map<VirtualMachine::Instruction, QList<int> >(
-			{
-				{ VirtualMachine::POP,  {9610, 9620, 300, 9630, 9640, 9650, 9660} },
-				{ VirtualMachine::PUSH, {9710, 9720, 400, 9730, 9740, 9750, 9760} },
-			}));
-
-			const QList<int> varList = varMap.value(instr);
-
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, varList[0] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[1]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(strValue.isEmpty()) {
-				emit memoryChanged(cellNo, varList[2]);
-				return 1;
-			} else if(isPointer) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, varList[3] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[4]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 10) {
-					emit memoryChanged(cellNo, varList[5] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[6]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
-		case VirtualMachine::INC:
-		case VirtualMachine::DEC:
-		case VirtualMachine::CALL:
-		{
-			static QMap<VirtualMachine::Instruction, QList<int> > varMap(std::map<VirtualMachine::Instruction, QList<int> >(
-			{
-				{ VirtualMachine::INC,  {9300, 9400, 100, 9000} },
-				{ VirtualMachine::DEC,  {9390, 9490, 200, 9090} },
-				{ VirtualMachine::CALL, {9500, 9510, 500, 9520} }
-			}));
-
-			const QList<int> varList = varMap.value(instr);
-
-			if(isConst) {
-				if(error) *error = tr("\"%1\" doesn't work on const values").arg(mnemonic.toUpper());
-				return -1;
-			} else if(isPointer) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, varList[0] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[1]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 100) {
-					emit memoryChanged(cellNo, varList[2] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[3]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-
-		case VirtualMachine::CPA:
-		case VirtualMachine::STO:
-		case VirtualMachine::ADD:
-		case VirtualMachine::SUB:
-		case VirtualMachine::BRA:
-		case VirtualMachine::BRN:
-		case VirtualMachine::MUL:
-		case VirtualMachine::BRZ:
-		{
-			const QList<int> varList = {
-			//	CPA   STO   ADD   SUB   BRA   BRN   MUL   BRZ
-				9110, 9120, 9130, 9140, 9150, 9160, 9170, 9180, // const < 10
-				9210, 9220, 9210, 9240, 9250, 9260, 9270, 9280, // const >= 10
-				9310, 9320, 9330, 9340, 9350, 9360, 9370, 9380, // pointer < 10
-				9410, 9420, 9430, 9440, 9450, 9460, 9470, 9480, // pointer >= 10
-				1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, // value < 1000
-				9010, 9020, 9030, 9040, 9050, 9060, 9070, 9080  // value >= 1000
-			};
-
-			const int diff = instr - VirtualMachine::CPA;
-
-			if(isConst) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, varList[0 + diff] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[8 + diff]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else if(isPointer) {
-				if(value < 10) {
-					emit memoryChanged(cellNo, varList[16 + diff] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[24 + diff]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			} else {
-				if(value < 1000) {
-					emit memoryChanged(cellNo, varList[32 + diff] + value);
-					return 1;
-				} else {
-					emit memoryChanged(cellNo, varList[40 + diff]);
-					emit memoryChanged(cellNo + 1, value);
-					return 2;
-				}
-			}
-		}
-		break;
-	}
-
-	return 0;
+	return m_instructionMap[m_addressMap[cellNo]];
 }
 
-int Compiler::evalExpression(const QString &expr)
+int Compiler::lineToCell(const int &lineNo)
 {
-	QString result = expr;
-	QMapIterator<QString, int> it(m_labelMap);
-	while(it.hasNext()) {
-		it.next();
-		result.replace(QRegularExpression("\\b" + it.key() + "\\b"), QString::number(it.value()));
-	}
+	return m_addressMap.key(m_instructionMap.indexOf(lineNo));
+}
 
-	result.remove('$');
+QString Compiler::code() const
+{
+	return m_code;
+}
 
-	Evaluator evaluator;
-	return evaluator.eval(result);
+void Compiler::setCode(const QString &code)
+{
+	m_startCell = -1;
+	m_code = code;
 }
 
 bool Compiler::compile(QStringList *msgs)
 {
-	int dataStart = 0;
-	int codeStart = 0;
+	if(!precompile(msgs))
+		return false;
 
-	for(int i = 0; i < m_lines.size(); ++i) {
-		const QString line = m_lines[i];
-		const QStringList parts = line.split(' ');
-		if(!parts.size())
-			continue;
+	QList<int> words;
+	QList<LabelItem> labelQueue;
+	int address = 0;
 
-		if(parts.size() == 3) {
-			/* 3 parts so it's one of:
-			 * - label mnemonic value
-			 * - cell mnemonic value
-			 */
+	auto packValue = [&](const int &value)
+	{
+		if(words.isEmpty())
+			return;
 
-			int cellNumber = parts[0].toInt();
+		words.last() += value;
+	};
 
-			//labeled instruction
-			if(parts[0].contains(':')) {
-				const QString label = parts[0].left(parts[0].size() - 1);
+	auto packOperand = [&](const int &operand)
+	{
+		if(words.isEmpty())
+			return;
 
-				if(!isValidLabel(label)) {
-					if(msgs) msgs->append(tr("%1:Invalid label name \"%2\"").arg(i + 1).arg(label));
-					return false;
-				}
+		words.last() += operand * 10000;
+	};
 
-				if(isKeyword(label)) {
-					if(msgs) msgs->append(tr("%1:Reserved word used \"%2\"").arg(i + 1).arg(label));
-					return false;
-				}
+	auto parseOperand = [&](QString operand, const int &n, const int &line)
+	{
+		operand.replace('\t', "").replace('\n', "");
 
-				m_labelMap.insert(label, codeStart);
-				cellNumber = codeStart;
-			}
+		bool isPointer = false;
+		if((operand[0] == '[') && (operand[operand.length() - 1] == ']')) {
+			isPointer = true;
+			operand = operand.mid(1, operand.length() - 2);
+		}
 
-			//labeled value
-			QString realVal = parts[2];
-			if(m_labelMap.contains(parts[2]))
-				realVal = QString::number(m_labelMap.value(parts[2]));
+		bool isConst = false;
+		if(!isPointer && operand.startsWith('$')) {
+			isConst = true;
+			operand = operand.mid(1);
+		}
 
-			QString error;
-			const int size = assembleInstruction(cellNumber, parts[1], realVal, &error);
-			if(size == -1) {
-				if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
-				return false;
-			}
+		bool isNumber = false;
+		operand.toInt(&isNumber);
 
-			m_lineMap.insert(i + 1, cellNumber);
-			codeStart = cellNumber + size;
-		} else if(parts.size() == 2) {
-			/*2 parts so one of:
-			* - directive value
-			* - label value
-			* - label label
-			* - (sequential) mnemonic value
-			* - cell value
-			* - cell mnemonic
-			*/
+		if((operand[0] == '"') && (operand[operand.length() - 1] == '"')) {
+			//string literal
+			operand = operand.mid(1, operand.length() - 2);
 
-			if(parts[0].startsWith('.')) {
-				//directive
+			for(int i = 0; i < operand.length(); ++i) {
+				char c = operand[i].toLatin1();
 
-				if(parts[0].toLower() == ".data") {
-					dataStart = parts[1].toInt();
-				} else if(parts[0].toLower() == ".code") {
-					codeStart = parts[1].toInt();
-					m_startCell = codeStart;
-				} else {
-					if(msgs) msgs->append(tr("%1:Unknown directive \"%2\"").arg(i + 1).arg(parts[0]));
-					return false;
-				}
-			} else if(parts[0].contains(':')) {
-				const QString label = parts[0].left(parts[0].size() - 1);
+				if(c == '\\') {
+					switch(operand[i + 1].toLatin1()) {
+						case 'n':  c = 10; break;
+						case 'r':  c = 13; break;
+						case 'a':  c = 7;  break;
+						case '\\': c = 92; break;
+						case '"':  c = 34; break;
+						case '0':  c = 0;  break;
 
-				if(!isValidLabel(label)) {
-					if(msgs) msgs->append(tr("%1:Invalid label name \"%2\"").arg(i + 1).arg(label));
-					return false;
-				}
+						default:
+						{
+							if(msgs) *msgs << tr("%1:Unrecognised string escape \\%2").arg(line).arg(operand[i+1]);
 
-				if(isKeyword(label)) {
-					if(msgs) msgs->append(tr("%1:Reserved word used \"%2\"").arg(i + 1).arg(label));
-					return false;
-				}
-
-				bool isNumber = false;
-				const int value = parts[1].toInt(&isNumber);
-
-				if(isNumber) {
-					//variable definition
-
-					m_lineMap.insert(i + 1, dataStart);
-					m_labelMap.insert(label, dataStart);
-					emit memoryChanged(dataStart, value);
-					++dataStart;
-				} else {
-					m_lineMap.insert(i + 1, codeStart);
-
-					if(isValidLabel(parts[1])) {
-						//labeled label
-
-						m_labelMap.insert(label, dataStart);
-
-						emit memoryChanged(dataStart, m_labelMap.value(parts[1]));
-						++dataStart;
-					} else {
-						//labeled mnemonic
-
-						m_labelMap.insert(label, codeStart);
-
-						QString error;
-						const int size = assembleInstruction(codeStart, parts[1], "", &error);
-						if(size == -1) {
-							if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
 							return false;
 						}
-
-						codeStart += size;
 					}
+
+					++i;
 				}
-			} else {
-				bool hasCellNumber = false;
-				const int cellNumber = parts[0].toInt(&hasCellNumber);
 
-				if(hasCellNumber) {
-					//has cell number
+				words << c;
+			}
+		} else if(isPointer && (operand.split('+').size() == 2)) {
+			//register + offset
+			const QString errorStr = tr("%1:Invalid offset pointer, must be one literal/label and one register.");
 
-					bool isNumber = false;
-					const int value = parts[1].toInt(&isNumber);
+			const QStringList split = operand.replace(' ', "").split('+');
+			QString reg;
+			QString offset;
 
-					if(isNumber) {
-						//memory value
-						emit memoryChanged(cellNumber, value);
-						dataStart = cellNumber + 1;
+			for(int i = 0; i < 2; ++i) {
+				bool isOffset = false;
+				int number = split[i].toInt(&isOffset);
+
+				if(isOffset) {
+					if(offset.isEmpty()) {
+						offset = QString::number(number);
 					} else {
-						//a mnemonic
+						if(msgs) *msgs << errorStr.arg(line);
 
-						QString error;
-						const int size = assembleInstruction(cellNumber, parts[1], "", &error);
-						if(size == -1) {
-							if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
-							return false;
-						}
-
-						codeStart = cellNumber + size;
-					}
-
-					m_lineMap.insert(i + 1, cellNumber);
-				} else {
-					//mnemonic and value
-
-					m_lineMap.insert(i + 1, codeStart);
-
-					//labeled value
-					QString realVal = parts[1];
-					if(m_labelMap.contains(parts[1]))
-						realVal = QString::number(m_labelMap.value(parts[1]));
-
-					QString error;
-					const int size = assembleInstruction(codeStart, parts[0], realVal, &error);
-					if(size == -1) {
-						if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
 						return false;
 					}
 
-					m_lineMap.insert(i + 1, codeStart);
-					codeStart += size;
-				}
-			}
-		} else if(parts.size() == 1) {
-			/* 1 part is
-			 * - (sequential) mnemonic
-			 * - (sequential) value
-			 * - label:
-			 */
+					//range check
 
-			bool isNumber = false;
-			const int value = parts[0].toInt(&isNumber);
+					packValue(number);
+				} else if(registerList.contains(split[i].toUpper())) {
+					if(reg.isEmpty()) {
+						reg = split[i].toUpper();
+					} else {
+						if(msgs) *msgs << errorStr.arg(line);
 
-			if(isNumber) {
-				//sequential memory value
-				emit memoryChanged(dataStart, value);
-				++dataStart;
-			} else if(parts[0].contains(':')) {
-				//label
-				m_lineMap.insert(i + 1, codeStart);
-			} else if(parts[0].size()) {
-				//(sequential) mnemonic
+						return false;
+					}
+				} else if(offset.isEmpty() && labelPattern.match(split[i]).hasMatch()) {
+					LabelItem label;
+					label.name = split[i];
+					label.address = address;
+					labelQueue << label;
+				} else {
+					if(msgs) *msgs << errorStr.arg(line);
 
-				m_lineMap.insert(i + 1, codeStart);
-
-				QString error;
-				const int size = assembleInstruction(codeStart, parts[0], 0, &error);
-				if(size == -1) {
-					if(msgs) msgs->append(QString("%1:%2").arg(i + 1).arg(error));
 					return false;
 				}
+			}
 
-				codeStart += size;
+			if(reg == "AX") {
+				packOperand(8);
+			} else if(reg == "IP") {
+				packOperand(9);
+			} else if(reg == "SP") {
+				packOperand(10);
+			} else if(reg == "SB") {
+				packOperand(11);
+			} else if(reg == "DI") {
+				packOperand(12);
+			}
+		} else if(isNumber) {
+			const int value = operand.toInt();
+
+			//range check
+
+			if(n > 0)
+				words << 0;
+
+			if(isPointer) {
+				packOperand(1);
+			} else if(isConst) {
+				packOperand(2);
+			} else {
+				packOperand(0);
+			}
+
+			packValue(value);
+		} else {
+			if(registerList.contains(operand.toUpper())) {
+				if(operand.toUpper() == "AX") {
+					packOperand(isPointer ? 8 : 3);
+				} else if(operand.toUpper() == "IP") {
+					packOperand(isPointer ? 9 : 4);
+				} else if(operand.toUpper() == "SP") {
+					packOperand(isPointer ? 10 : 5);
+				} else if(operand.toUpper() == "SB") {
+					packOperand(isPointer ? 11 : 6);
+				} else if(operand.toUpper() == "DI") {
+					packOperand(isPointer ? 12 : 7);
+				}
+			} else {
+				if(isPointer) {
+					packOperand(1);
+				} else if(isConst) {
+					packOperand(2);
+				} else {
+					packOperand(0);
+				}
+
+				if(labelPattern.match(operand).hasMatch()) {
+					LabelItem label;
+					label.name = operand;
+					label.address = address;
+					labelQueue << label;
+				} else {
+					if(msgs) *msgs << tr("%1:Illegal symbol in label \"%2\"").arg(line).arg(operand);
+
+					return false;
+				}
+			}
+		}
+
+		return true;
+	};
+
+	QHash<int, int> memory;
+
+	for(int i = 0; i < m_instructions.size(); ++i) {
+		const QString mnemonic = m_instructions[i].mnemonic.toUpper();
+		const QStringList operands = m_instructions[i].operands;
+
+		if((mnemonic == ".CODE") || (mnemonic == ".DATA")) {
+			if(operands.size()) {
+				address = operands[0].toInt();
+
+				if((mnemonic == ".CODE") && (m_startCell == -1)) {
+					m_startCell = address;
+				}
+			}
+
+			//range check
+		} else {
+			if(mnemonicMap.value(mnemonic).operands > operands.size()) {
+				if(msgs) *msgs << tr("%1:Invalid operand count for \"%2\" (expecting %3)").arg(m_instructionMap[i])
+																						  .arg(mnemonic)
+																						  .arg(mnemonicMap.value(mnemonic).operands);
+
+				return false;
+			}
+
+			if(mnemonicMap.value(mnemonic.toUpper()).code > -1) {
+				words = { mnemonicMap.value(mnemonic.toUpper()).code * 1000000 };
+			} else {
+				words = { };
+			}
+
+			for(int j = 0; j < operands.size(); ++j) {
+				if(!parseOperand(operands[j], j, m_instructionMap[i]))
+					return false;
+			}
+
+			const int prevAddress = address;
+			for(int j = 0; j < words.size(); ++j)
+				memory.insert(address++, words[j]);
+
+			for(int j = prevAddress; j <= address; ++j) {
+				m_addressMap.insert(j, i);
 			}
 		}
 	}
 
+	for(int i = 0; i < labelQueue.size(); ++i) {
+		if(!m_labelMap.contains(labelQueue[i].name)) {
+			if(msgs) *msgs << tr("%1:Undefined label \"%2\"").arg(-1).arg(labelQueue[i].name);
+
+			return false;
+		}
+
+		int value = address;
+		const int key = m_addressMap.key(m_labelMap.value(labelQueue[i].name), -1);
+		if(key > -1)
+			value = key;
+
+		memory[labelQueue[i].address] += value;
+	}
+
+	QHashIterator<int, int> it(memory);
+	while(it.hasNext()) {
+		it.next();
+
+		emit memoryChanged(it.key(), it.value());
+	}
+
 	return true;
 }
+
+bool Compiler::precompile(QStringList *msgs)
+{
+	m_instructionMap.clear();
+	m_instructions.clear();
+	m_addressMap.clear();
+	m_labelMap.clear();
+
+	QStringList operands;
+	QString operand;
+	bool inString = false;
+	bool inPointer = false;
+	bool inEscape = false;
+
+	auto finishOperand = [&](const int &line)
+	{
+		if(operand.isEmpty())
+			return;
+
+		if(operand.endsWith(':')) {
+			const QString label = operand.mid(0, operand.length() - 1);
+			if(!labelPattern.match(label).hasMatch()) {
+				if(msgs) *msgs << tr("%1:Invalid label name \"%2\"").arg(line).arg(label);
+
+				return false;
+			}
+
+			if(m_labelMap.contains(label)) {
+				if(msgs) *msgs << tr("%1:Label already defined \"%2\"").arg(line).arg(label);
+
+				return false;
+			}
+
+			m_labelMap.insert(label, m_instructions.size());
+		} else {
+			operands << operand;
+		}
+
+		operand.clear();
+
+		return true;
+	};
+
+	QStringList lines = m_code.split('\n', QString::KeepEmptyParts);
+	for(int i = 0; i < lines.count(); ++i) {
+		QString line = lines[i];
+
+		operands.clear();
+
+		inString = false;
+		inPointer = false;
+		inEscape = false;
+
+		for(int j = 0; j < line.size(); ++j) {
+			QChar c = line[j];
+
+			if(inString) {
+				operand += c;
+
+				if(!inEscape) {
+					if(c == '"') {
+						inString = false;
+					} else if(c == '\\') {
+						inEscape = true;
+					}
+				} else {
+					inEscape = false;
+				}
+			} else if(inPointer) {
+				operand += c;
+
+				if(c == ']')
+					inPointer = false;
+			} else if(isWhitespace(c)) {
+				if(!finishOperand(i + 1))
+					return false;
+			} else if(c == ';') {
+				//comment, we are done here
+				break;
+			} else {
+				operand += c;
+
+				inString  = (c == '"');
+				inPointer = (c == '[');
+			}
+		}
+
+		if(!finishOperand(i + 1))
+			return false;
+
+		if(inString) {
+			if(msgs) *msgs << tr("%1:Unterminated string").arg(i + 1);
+			return false;
+		}
+
+		if(inPointer) {
+			if(msgs) *msgs << tr("%1:Unclosed pointer brackets").arg(i + 1);
+			return false;
+		}
+
+		if(operands.isEmpty())
+			continue;
+
+		QString firstItem = operands.takeFirst();
+		QString mnemonic = firstItem.toUpper();
+		if(!mnemonicMap.contains(mnemonic) && (mnemonic != ".CODE") && (mnemonic != ".DATA")) {
+			bool isNumber = false;
+			mnemonic.toInt(&isNumber);
+
+			if(isNumber && operands.size()) {
+				//10	1
+				//10	CPA $1
+
+				Instruction instr;
+				instr.mnemonic = ".data";
+				instr.operands = { mnemonic };
+				m_instructions << instr;
+
+				m_instructionMap << i + 1;
+
+				bool isNumber = false;
+				operands[0].toInt(&isNumber);
+				if(!isNumber) {
+					//10	CPA $1
+					mnemonic = operands.takeFirst().toUpper();
+
+					if(!mnemonicMap.contains(mnemonic)) {
+						if(msgs) *msgs << tr("%1:Invalid mnemonic \"%2\"").arg(i + 1).arg(mnemonic);
+						return false;
+					}
+				}
+			} else if(isNumber || labelPattern.match(mnemonic).hasMatch()) {
+				//10
+				//label:	5
+				//label:	label2
+
+				operands.push_front(firstItem);
+				mnemonic = "DAT";
+			} else {
+				if(msgs) *msgs << tr("%1:Invalid mnemonic \"%2\"").arg(i + 1).arg(mnemonic);
+				return false;
+			}
+		}
+
+		//operandless stack instructions operate on AX
+		if((mnemonic == "POP") || (mnemonic == "PUSH"))
+			if(!operands.size())
+				operands << "ax";
+
+		Instruction instr;
+		instr.mnemonic = mnemonic;
+		instr.operands = operands;
+		m_instructions << instr;
+
+		m_instructionMap << i + 1;
+	}
+
+	return true;
+}
+

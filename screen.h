@@ -1,9 +1,9 @@
-#ifndef CANVAS_H
-#define CANVAS_H
+#ifndef SCREEN_H
+#define SCREEN_H
 
 #include <QWidget>
 
-class Canvas : public QWidget
+class Screen : public QWidget
 {
 	Q_OBJECT
 
@@ -22,25 +22,27 @@ class Canvas : public QWidget
 
 		struct Char
 		{
-			Char(const Canvas::Color &fore, const Canvas::Color &back, const char &c):
+			Char(const Screen::Color &fore, const Screen::Color &back, const char &c):
 				fore(fore),
 				back(back),
 				ch(c)
 			{ }
 
-			Canvas::Color fore;
-			Canvas::Color back;
+			Screen::Color fore;
+			Screen::Color back;
 			char ch;
 		};
 
 	public:
-		explicit Canvas(QWidget *parent = 0);
+		explicit Screen(QWidget *parent = 0);
 
 		void setBack(const int &back);
 		void setFore(const int &fore);
 		void setCol(const int &col);
 		void setRow(const int &row);
 		void setChar(const char &ch);
+
+		void reset();
 
 	protected:
 		void paintEvent(QPaintEvent *event);
@@ -53,4 +55,4 @@ class Canvas : public QWidget
 		QList<Char> m_buffer;
 };
 
-#endif // CANVAS_H
+#endif // SCREEN_H

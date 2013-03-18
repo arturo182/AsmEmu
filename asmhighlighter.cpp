@@ -6,8 +6,8 @@ AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 	QSyntaxHighlighter(parent),
 	m_enabled(true)
 {
-	const QString mnemonics = "(hlt|cpa|sto|add|sub|bra|brn|mul|brz|inc|dec|pop|push|call|ret)";
-	const QString registers = "(ax|sp|sb|ip|flags)";
+	const QString mnemonics = "(hlt|cpa|sto|rsi|add|sub|mul|bra|brn|brz|brof|brnf|brzf|inc|dec|pop|push|call|ret|dat|scrx|scry|scrf|scrb|scr)";
+	const QString registers = "(ax|sp|sb|ip|di|flags)";
 	const QString label = "[a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ_][_a-zęóąśłżźćńĘÓĄŚŁŻŹĆŃ0-9]*";
 
 	//the order here is important
@@ -31,6 +31,9 @@ AsmHighlighter::AsmHighlighter(QTextDocument *parent) :
 
 	//directives
 	m_rules << new HighlighterRule("^\\.(.*)$", Qt::darkGray);
+
+	//strings
+	m_rules << new HighlighterRule("\\s\\\".*\\\"(\\s|;|$)", Qt::red, QRegularExpression::CaseInsensitiveOption);
 
 	//comments
 	m_rules << new HighlighterRule(";(.*)$", Qt::darkGreen);

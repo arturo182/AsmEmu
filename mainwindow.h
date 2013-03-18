@@ -2,11 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
 #include <QMap>
 
-class QTreeWidgetItem;
 class AsmHighlighter;
 class VirtualMachine;
+class Compiler;
+
+class QTreeWidgetItem;
 class QSignalMapper;
 class QSpinBox;
 class QLabel;
@@ -65,10 +68,12 @@ class MainWindow : public QMainWindow
 	private:
 		Ui::MainWindow *m_ui;
 		QSignalMapper *m_mruMapper;
-		QMap<int, QTreeWidgetItem*> m_registerItems;
-		QMap<int, QTreeWidgetItem*> m_labelItems;
+		QHash<int, QTreeWidgetItem*> m_registerItems;
+		QHash<int, QTreeWidgetItem*> m_labelItems;
 		AsmHighlighter *m_asmHighlighter;
 		VirtualMachine *m_virtualMachine;
+		QTimer m_tickTimer;
+		Compiler *m_compiler;
 		QVector<int> m_prevRegisters;
 		QVector<int> m_prevMemory;
 		int m_prevStartCell;

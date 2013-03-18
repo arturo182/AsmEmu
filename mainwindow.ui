@@ -22,16 +22,7 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -115,16 +106,7 @@
    </attribute>
    <widget class="QWidget" name="registersDockWidget">
     <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -162,16 +144,7 @@
    </attribute>
    <widget class="QWidget" name="labelDockWidget">
     <layout class="QVBoxLayout" name="verticalLayout_4">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -214,20 +187,11 @@
    </attribute>
    <widget class="QWidget" name="canvasDockWidget">
     <layout class="QVBoxLayout" name="verticalLayout_5">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
-      <widget class="Canvas" name="canvas" native="true">
+      <widget class="Screen" name="canvas" native="true">
        <property name="minimumSize">
         <size>
          <width>192</width>
@@ -248,16 +212,7 @@
    </attribute>
    <widget class="QWidget" name="messagesDockWidget">
     <layout class="QVBoxLayout" name="verticalLayout_6">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -292,16 +247,7 @@
    </attribute>
    <widget class="QWidget" name="memoryDockWidget">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -621,9 +567,9 @@
    <header>memoryview.h</header>
   </customwidget>
   <customwidget>
-   <class>Canvas</class>
+   <class>Screen</class>
    <extends>QWidget</extends>
-   <header>canvas.h</header>
+   <header>screen.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

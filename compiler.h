@@ -3,33 +3,50 @@
 
 #include <QStringList>
 #include <QObject>
-#include <QMap>
+#include <QHash>
 
 class Compiler : public QObject
 {
 	Q_OBJECT
 
 	public:
-		Compiler(const QString &code);
+		struct Instruction
+		{
+			QString mnemonic;
+			QStringList operands;
+		};
+
+		struct LabelItem
+		{
+			QString name;
+			int address;
+		};
+
+	public:
+		Compiler(const QString &code, QObject *parent = 0);
 		
 		bool compile(QStringList *msgs = 0);
+		bool precompile(QStringList *msgs = 0);
 
-		const QMap<int, int> &lineMap() const;
-		const QMap<QString, int> &labelMap() const;
+		QHash<QString, int> labelMap() const;
 		int startCell() const;
+
+		int cellToLine(const int &cellNo);
+		int lineToCell(const int &lineNo);
+
+		QString code() const;
+		void setCode(const QString &code);
 
 	signals:
 		void memoryChanged(const int &cellNo, const int &value);
 
 	private:
-		int assembleInstruction(const int &cellNo, const QString &mnemonic, const QString &strValue, QString *error = 0);
-		int evalExpression(const QString &expr);
-
-	private:
-		QMap<QString, int> m_labelMap;
-		QMap<int, int> m_lineMap;
-		QStringList m_lines;
+		QList<Instruction> m_instructions;
+		QHash<QString, int> m_labelMap;
+		QHash<int, int> m_addressMap;
+		QList<int> m_instructionMap;
 		int m_startCell;
+		QString m_code;
 };
 
 #endif // COMPILER_H
