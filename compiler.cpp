@@ -1,7 +1,6 @@
 #include "compiler.h"
 
 #include "virtualmachine.h"
-#include "evaluator.h"
 
 #include <QRegularExpression>
 #include <QDebug>
@@ -380,7 +379,7 @@ bool Compiler::precompile(QStringList *msgs)
 	auto finishOperand = [&](const int &line)
 	{
 		if(operand.isEmpty())
-			return;
+			return true;
 
 		if(operand.endsWith(':')) {
 			const QString label = operand.mid(0, operand.length() - 1);
