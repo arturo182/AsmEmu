@@ -184,7 +184,7 @@ bool Compiler::compile(QStringList *msgs)
 			}
 		} else if(isPointer && (operand.split('+').size() == 2)) {
 			//register + offset
-			const QString errorStr = tr("%1:Invalid offset pointer, must be one literal/label and one register.");
+			const QString errorStr = tr("%1:Invalid offset pointer, must be one literal/label and one register");
 
 			const QStringList split = operand.replace(' ', "").split('+');
 			QString reg;
