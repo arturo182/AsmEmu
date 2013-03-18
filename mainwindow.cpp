@@ -485,7 +485,6 @@ void MainWindow::loadFile(const QString &fileName)
 
 	m_compiler->setCode(m_ui->codeEdit->toPlainText());
 	m_compiler->compile();
-	qDebug() << m_compiler->startCell();
 	m_startCellSpinBox->setValue(m_compiler->startCell());
 
 	setCurrentFile(fileName);

@@ -155,6 +155,8 @@ bool Compiler::compile(QStringList *msgs)
 			//string literal
 			operand = operand.mid(1, operand.length() - 2);
 
+			words.clear();
+
 			for(int i = 0; i < operand.length(); ++i) {
 				char c = operand[i].toLatin1();
 
@@ -318,7 +320,7 @@ bool Compiler::compile(QStringList *msgs)
 			if(mnemonicMap.value(mnemonic.toUpper()).code > -1) {
 				words = { mnemonicMap.value(mnemonic.toUpper()).code * 1000000 };
 			} else {
-				words = { };
+				words = { 0 };
 			}
 
 			for(int j = 0; j < operands.size(); ++j) {
@@ -331,7 +333,8 @@ bool Compiler::compile(QStringList *msgs)
 				memory.insert(address++, words[j]);
 
 			for(int j = prevAddress; j <= address; ++j) {
-				m_addressMap.insert(j, i);
+				if(!m_addressMap.values().contains(i))
+					m_addressMap.insert(j, i);
 			}
 		}
 	}
