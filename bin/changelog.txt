@@ -1,7 +1,10 @@
 * - zmiany w programie, # - zmiany w języku
 
-1.2
+1.1.99 (brakuje uzupełnionej pomocy)
 * Dodano wyświetlanie błędów kompilacji
+* Dodano menu Widok
+*# Dodano obsługę nowego ABI
+*# Dodano obsługę prostego ekranu (SCRX - kolumna, SCRY - wiersz, SCRF - czcionka, SCRB - tło, SCR - wypisz znak)
 
 1.1.5
 * Zaktualizowano pomoc w progamie (F1 - polecam!)
