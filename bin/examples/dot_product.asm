@@ -34,7 +34,7 @@
 	CPA $0
 	STO 8
 	CPA 9
-	BRZ 48
+	BRZ 46
 	CPA [1]
 	MUL [2]
 	ADD 8
@@ -42,5 +42,5 @@
 	INC 1
 	INC 2
 	DEC 9
-	BRA 38
+	BRA 36
 	HLT

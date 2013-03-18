@@ -37,7 +37,7 @@ start:	CPA $10
 	CPA $0
 	STO 8
 	CPA 9
-	BRZ 48
+	BRZ 46
 	CPA [1]
 	MUL [2]
 	ADD 8
@@ -45,5 +45,5 @@ start:	CPA $10
 	INC 1
 	INC 2
 	DEC 9
-	BRA 38
+	BRA 36
 koniec:	HLT
