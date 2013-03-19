@@ -57,6 +57,7 @@ class CodeEdit: public QPlainTextEdit
 		void focusChanged(bool focus);
 
 	protected:
+		void keyPressEvent(QKeyEvent *event);
 		void resizeEvent(QResizeEvent *event);
 		void focusInEvent(QFocusEvent *event);
 		void focusOutEvent(QFocusEvent *event);

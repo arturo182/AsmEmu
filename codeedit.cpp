@@ -243,3 +243,27 @@ void CodeEdit::updateGutter(const QRect &rect, const int &yDistance)
 	if(rect.contains(viewport()->rect()))
 		updateGutterWidth();
 }
+
+
+void CodeEdit::keyPressEvent(QKeyEvent *event)
+{
+	QPlainTextEdit::keyPressEvent(event);
+
+	if((event->key() == Qt::Key_Return) || (event->key() == Qt::Key_Enter)) {
+		if(blockCount() == 1)
+			return;
+
+		QString indent;
+		const QString prevLine = textCursor().block().previous().text();
+		for(int i = 0; i < prevLine.size(); ++i) {
+			if(!prevLine[i].isSpace())
+				break;
+
+			indent += prevLine[i];
+		}
+
+		QTextCursor cursor = textCursor();
+		cursor.insertText(indent);
+		setTextCursor(cursor);
+	}
+}
