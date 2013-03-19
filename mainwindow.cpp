@@ -362,12 +362,15 @@ void MainWindow::updateMruMenu()
 	QSettings set;
 	const QStringList files = set.value("mru").toStringList();
 	foreach(const QString &fileName, files) {
+		if(!QFile::exists(fileName))
+			continue;
+
 		QAction *action = m_ui->recentFilesMenu->addAction(fileName);
 		connect(action, SIGNAL(triggered()), m_mruMapper, SLOT(map()));
 		m_mruMapper->setMapping(action, fileName);
 	}
 
-	if(files.count()) {
+	if(m_ui->recentFilesMenu->actions().size() > 1) {
 		m_ui->recentFilesMenu->setEnabled(true);
 		m_ui->recentFilesMenu->addSeparator();
 		m_ui->recentFilesMenu->addAction(m_ui->clearMruAction);
