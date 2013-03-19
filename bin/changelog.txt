@@ -1,10 +1,18 @@
 * - zmiany w programie, # - zmiany w języku
 
+1.2
+* Automatyczne wcięcie nowej linijki
+* Uzupełniona pomoc
+
 1.1.99 (brakuje uzupełnionej pomocy)
 * Dodano wyświetlanie błędów kompilacji
 * Dodano menu Widok
+* Powiększono wysokość ekranu aby osiągnąć proporcje 4:3
+* Dodano nowy przykład dla ekranu
 *# Dodano obsługę nowego ABI
 *# Dodano obsługę prostego ekranu (SCRX - kolumna, SCRY - wiersz, SCRF - czcionka, SCRB - tło, SCR - wypisz znak)
+# Dodano rejestr indeksujący (DI - Data Index)
+# Dodano instrukcję resetujacą DI (RSI)
 
 1.1.5
 * Zaktualizowano pomoc w progamie (F1 - polecam!)
