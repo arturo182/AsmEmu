@@ -20,7 +20,7 @@ const QMap<Screen::Color, QColor> colorMap(
 ));
 
 static int cols = 32;
-const int rows = 12;
+const int rows = 18;
 static int charWidth = 6;
 static int charHeight = 8;
 static int scale = 2;
