@@ -202,8 +202,6 @@ bool Compiler::compile(QStringList *msgs)
 						return false;
 					}
 
-					//range check
-
 					packValue(number);
 				} else if(registerList.contains(split[i].toUpper())) {
 					if(reg.isEmpty()) {
@@ -239,7 +237,11 @@ bool Compiler::compile(QStringList *msgs)
 		} else if(isNumber) {
 			const int value = operand.toInt();
 
-			//range check
+			const int intValue = VirtualMachine::memoryToInt(value);
+			if((intValue < -999) || (intValue > 999)) {
+				if(msgs) *msgs << tr("%1:Value out of range \"%2\"").arg(line).arg(value);
+				return false;
+			}
 
 			if(n > 0)
 				words << 0;
@@ -305,8 +307,6 @@ bool Compiler::compile(QStringList *msgs)
 					m_startCell = address;
 				}
 			}
-
-			//range check
 		} else {
 			if(mnemonicMap.value(mnemonic).operands > operands.size()) {
 				if(msgs) *msgs << tr("%1:Invalid operand count for \"%2\" (expecting %3)").arg(m_instructionMap[i])
@@ -521,4 +521,3 @@ bool Compiler::precompile(QStringList *msgs)
 
 	return true;
 }
-
