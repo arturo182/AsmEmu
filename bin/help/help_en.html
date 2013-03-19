@@ -10,10 +10,34 @@
   </head>
   <body>
 	<div class="row-fluid">
-		<h2>Fasm (Fulmański Assembler) Help</h2>
+		<h2>Fasm (Fulmański Assembler) Help</h2>		
+		<h3>Table of contents</h3>
+		<ul class="unstyled">
+			<li><a href="#codeflow">1. Code flow</a></li>
+			<li>
+				<ul class="unstyled">
+					<li>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#old_way">1.1 The old way</a></li>
+					<li>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#new_way">1.2 The new way</a></li>
+				</ul>
+			</li>
+			<li><a href="#types">2. Value types</a>
+			<li>
+				<ul class="unstyled">
+					<li>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#consts">2.1 Constants</a></li>
+					<li>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#pointers">2.2 Pointers</a></li>
+				</ul>
+			</li>
+			<li><a href="#stack">3. Stack</a></li>
+			<li><a href="#registers">4. Registers</a></li>
+			<li><a href="#instructions">5. Instruction table</a></li>
+			<li><a href="#screen">6. Screen</a></li>
+		</ul>
+		
+		<a name="codeflow"></a>
 		<h3>1. Code flow</h3>
 		There are basically two ways to write programs in Fasm, the old way and the new way.
 
+		<a name="old_way"></a>
 		<h4>1.1 The old way</h4>
 		When writing in the old way, you have to specify where all the values and instructions are located in the memory. 
 		To do so, write the memory cell number before the value or instruction:
@@ -38,6 +62,7 @@
 	But what if you have to branch to a instruction, you can never be sure what is the address of that instruction. 
 	This is why the new way was introduced.
 	
+	<a name="new_way"></a>
 	<h4>1.2 The new way</h4>
 	Introducing the labels. Labels are aliases for memory cells that are assigned at compile time. 
 	You can use them instead of cell numbers in your instructions. But this raises the issue of where the code starts. 
@@ -54,7 +79,9 @@ start:	CPA x
 	Doesn't that look neat? Now, if you want to branch to the start of the code just use BRA start, 
 	the compiler will change that to 10 or whatever the value will be.
 
+	<a name="types"></a>
 	<h3>2. Value types</h3>
+	<a name="consts"></a>
 	<h4>2.1 Constants</h4>
 	Operating on cell numbers is pretty cool, but what if you want to add the number 2 to the accumulator? 
 	Having to create a new label for it feels like an overkill. That's why we introduce const values. 
@@ -65,6 +92,7 @@ ADD $123</pre>
 	<br>
 	Notice the dollar sign next to the value? That's what distinguishes a cell number from a constant.
 
+	<a name="pointers"></a>
 	<h4>2.2 Pointers</h4>
 	And what if we want to use the value of a cell that we have the number of? There's a very simple way to do that too:
 	<br><br>
@@ -74,15 +102,17 @@ x: 2
 .code 10
 CPA [x] ;the accumulator will contain the value of cell number 2</pre>
 	<br>
-	That's easy right? But wait, there's more! You can perform math operations in a pointer:
+	That's easy right? But wait, there's more! You can also reference szystko! Wskaźnik może także odwoływać się do wartości <a href="#registers">registers</a> with an offset:
 	<br><br>
 	<pre>.data 0
 x: 2
 y: 3
 
 .code 10
-CPA [x + y * 2] ; the value of cell 8</pre>
-
+CPA [AX + 2] ; the value of cell pointed by the value of AX incremented by 2</pre>
+	You can use this way to access ale the registers but the FLAGS register.
+	
+	<a name="stack"></a>
 	<h3>3. Stack</h3>
 	Everyone knows what a stack is, if you don't know what it is, go read dr Fulmański's book and come back later.
 	<br><br>
@@ -107,15 +137,16 @@ PUSH ; push the 5 o the stack
 (...)
 POP ;set the accumulator to 5</pre>
 
+	<a name="registers"></a>
 	<h3>4. Registers</h3>
-	Registers are cell-sized values that are kept in other region of the data machine and apart from the accumulator are inaccessible at the moment. 
-	Here's a short description of all of them:
+	Registers are cell-sized values that are kept in other region of the data machine. Here's a short description of all of them:
 	
 	<ul>
 		<li>AX - the accumulator, it helps you perform mathematic operations without having to use memory cells</li>
 		<li>IP - instruction pointer, points to the cell number of the instruction that's going to be executed next</li>
 		<li>SP - stack pointer, points to the top of the stack, the pushed values go to SP-1</li>
 		<li>SB - stack base, points to the bottom of the stack</li>
+		<li>DI - data index, helpful when eg. iterating an array</li>
 		<li>FLAGS - flags indicate the situation after the last arithmetic operation (ADD, SUB, MUL, INC, DEC). There are three flags:</li>
 		<ul>
 			<li>ZF - the zero flag, is set to 1 if the last operation resulted in 0</li>
@@ -124,6 +155,7 @@ POP ;set the accumulator to 5</pre>
 		</ul>
 	</ul>
 
+	<a name="instructions"></a>
 	<h3>5. Instruction table</h3>
 	
 	<div class="alert alert-info"><strong>Reminder:</strong> Labels are also considered values.</div>
@@ -156,6 +188,12 @@ POP ;set the accumulator to 5</pre>
 				<td>Store</td>
 				<td>value/pointer</td>
 				<td>Store the accumulator value to the operand</td>
+			</tr>	
+			<tr>
+				<td>RSI</td>
+				<td>ReSet Index</td>
+				<td>none</td>
+				<td>Resets DI register value to 0</td>
 			</tr>				
 			<tr>
 				<td>ADD</td>
@@ -168,31 +206,49 @@ POP ;set the accumulator to 5</pre>
 				<td>Subtraction</td>
 				<td>value/pointer/const</td>
 				<td>Subtract the operand value from the accumulator and store the result in the accumulator</td>
-			</tr>				
-			<tr>
-				<td>BRA</td>
-				<td>Branch Always</td>
-				<td>value/const</td>
-				<td>Branch to operand</td>
-			</tr>				
-			<tr>
-				<td>BRN</td>
-				<td>Branch when Negative</td>
-				<td>value/const</td>
-				<td>Branch to operand value if accumulator is less than zero</td>
-			</tr>				
+			</tr>					
 			<tr>
 				<td>MUL</td>
 				<td>Multiplication</td>
 				<td>value/pointer/const</td>
 				<td>Multiply the operand value by the accumulator and store the result in the accumulator</td>
+			</tr>			
+			<tr>
+				<td>BRA</td>
+				<td>Branch Always</td>
+				<td>value/pointer/const</td>
+				<td>Branch to operand</td>
+			</tr>				
+			<tr>
+				<td>BRN</td>
+				<td>Branch when Negative</td>
+				<td>value/pointer/const</td>
+				<td>Branch to operand value if accumulator is less than zero</td>
 			</tr>				
 			<tr>
 				<td>BRZ</td>
 				<td>Branch when Zero </td>
-				<td>value/const</td>
+				<td>value/pointer/const</td>
 				<td>Branch to operand value if accumulator is 0</td>
+			</tr>	
+			<tr>
+				<td>BROF</td>
+				<td>Branch when Overflow Flag set</td>
+				<td>value/pointer/const</td>
+				<td>Branch to operand value if the overflow flag is set</td>
+			</tr>		
+			<tr>
+				<td>BRNF</td>
+				<td>Branch when Negative Flag set</td>
+				<td>value/pointer/const</td>
+				<td>Branch to operand value if the negative flag is set</td>
 			</tr>				
+			<tr>
+				<td>BRZF</td>
+				<td>Branch when Zero Flag set</td>
+				<td>value/pointer/const</td>
+				<td>Branch to operand value if the zero flag is set</td>
+			</tr>	
 			<tr>
 				<td>INC</td>
 				<td>Increment</td>
@@ -204,19 +260,7 @@ POP ;set the accumulator to 5</pre>
 				<td>Decrement</td>
 				<td>value/pointer</td>
 				<td>Decrement (subtract 1) the operand value</td>
-			</tr>				
-			<tr>
-				<td>PUSH</td>
-				<td>Push</td>
-				<td>none</td>
-				<td>Push the accumulator value to the stack</td>
-			</tr>				
-			<tr>
-				<td>PUSH</td>
-				<td>Push</td>
-				<td>value/pointer/const</td>
-				<td>Push the operand value to the stack</td>
-			</tr>				
+			</tr>					
 			<tr>
 				<td>POP</td>
 				<td>Pop</td>
@@ -228,6 +272,18 @@ POP ;set the accumulator to 5</pre>
 				<td>Pop</td>
 				<td>value/pointer</td>
 				<td>Pop the stack into the operand value</td>
+			</tr>			
+			<tr>
+				<td>PUSH</td>
+				<td>Push</td>
+				<td>none</td>
+				<td>Push the accumulator value to the stack</td>
+			</tr>				
+			<tr>
+				<td>PUSH</td>
+				<td>Push</td>
+				<td>value/pointer/const</td>
+				<td>Push the operand value to the stack</td>
 			</tr>				
 			<tr>
 				<td>CALL</td>
@@ -242,6 +298,95 @@ POP ;set the accumulator to 5</pre>
 				<td>Pop the stack and branch to the popped cell number</td>
 			</tr>				
 		</tbody>
+		</table>
+		
+		<a name="screen"></a>
+		<h3>6. Screen</h3>
+		The screen is not included in the official language specification, but it's awesome, so let's have a look at it.<br><br>
+		The screen's size is 32 by 18 characters, every character has its own font and background color. There are 8 available colors:
+		
+		<table class="table table-bordered" style="width: 100px;">
+			<tr>
+				<td>0</td>
+				<td style="background-color: #000000;">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>1</td>
+				<td style="background-color: #ff0000;">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td style="background-color: #00ff00;">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>3</td>
+				<td style="background-color: #0000ff;">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>4</td>
+				<td style="background-color: #00ffff;">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>5</td>
+				<td style="background-color: #ff00ff;">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>6</td>
+				<td style="background-color: #ffff00;">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>7</td>
+				<td style="background-color: #ffffff;">&nbsp;</td>
+			</tr>
+		</table>
+		
+		After every insertion the cursor is moved right and to the next line (if needed).<br>
+		Supported ASCII character range is from 32 (space) till 126 (tilde ~), trying to insert any other character inserts a space.
+		<br><br>
+		Screen instructions:
+		<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Mnemonic</th>
+				<th>Meaning</th>
+				<th>Operand</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		
+		<tbody>
+			<tr>
+				<td>SCRX</td>
+				<td>Screen set X</td>
+				<td>value/pointer/const</td>
+				<td>Moves cursor column to operand value</td>
+			</tr>
+			<tr>
+				<td>SCRY</td>
+				<td>Screen set Y</td>
+				<td>value/pointer/const</td>
+				<td>Moves cursor row to operand value</td>
+			</tr>
+			<tr>
+				<td>SCRB</td>
+				<td>Screen set Background</td>
+				<td>value/pointer/const</td>
+				<td>Sets background color for inserted characters</td>
+			</tr>
+			<tr>
+				<td>SCRF</td>
+				<td>Screen set Foreground</td>
+				<td>value/pointer/const</td>
+				<td>Sets foreground color for inserted characters</td>
+			</tr>
+			<tr>
+				<td>SCR</td>
+				<td>Screen write</td>
+				<td>value/pointer/const</td>
+				<td>Inserts character (ASCII code) at cursor position</td>
+			</tr>
+		</tbody>
+		</table>
 	</div>
   </body>
 </html>
