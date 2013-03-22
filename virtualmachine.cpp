@@ -251,10 +251,16 @@ bool VirtualMachine::exec()
 
 		case RET:
 		{
-			if(m_registers[SP] != m_registers[SB])
-				m_registers[SP] = intToMemory(memoryToInt(m_registers[SP]) + 1);
+			const int popCount = memoryToInt(valueFor(aa, xxxx)) + 1;
 
-			const int intVal = memoryToInt(m_registers[SP]);
+			for(int i = 0; i < popCount; ++i) {
+				if(m_registers[SP] == m_registers[SB])
+					break;
+
+				m_registers[SP] = intToMemory(memoryToInt(m_registers[SP]) + 1);
+			}
+
+			const int intVal = memoryToInt(m_registers[SP]) - popCount + 1;
 			m_execCell = memoryToInt(m_memory[intVal]);
 		}
 		break;

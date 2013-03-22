@@ -511,6 +511,10 @@ bool Compiler::precompile(QStringList *msgs)
 			if(!operands.size())
 				operands << "ax";
 
+		//operandless RET operates on const 0
+		if(mnemonic == "RET" && !operands.size())
+			operands << "$0";
+
 		Instruction instr;
 		instr.mnemonic = mnemonic;
 		instr.operands = operands;

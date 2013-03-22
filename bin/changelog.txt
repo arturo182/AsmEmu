@@ -1,5 +1,8 @@
 * - zmiany w programie, # - zmiany w języku
 
+1.2.1
+# RET może przyjmować opcjonalną liczbę dodatkowych operacji POP jako argument
+
 1.2
 * Automatyczne wcięcie nowej linijki
 * Uzupełniona pomoc
