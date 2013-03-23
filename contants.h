@@ -3,7 +3,7 @@
 
 namespace Constants
 {
-	const char Version[] = "1.2";
+	const char Version[] = "1.2.1";
 }
 
 #endif // CONTANTS_H
