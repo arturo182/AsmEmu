@@ -35,6 +35,7 @@ class AsmHighlighter: public QSyntaxHighlighter
 	private:
 		QList<HighlighterRule*> m_rules;
 		bool m_enabled;
+		bool m_readOnly;
 };
 
 #endif // ASMHIGHLIGHTER_H

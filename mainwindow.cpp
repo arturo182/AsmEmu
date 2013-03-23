@@ -48,8 +48,8 @@ class TreeItem : public QTreeWidgetItem
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	m_ui(new Ui::MainWindow),
-	m_mruMapper(new QSignalMapper(this)),
 	m_startCellSpinBox(new QSpinBox(this)),
+	m_mruMapper(new QSignalMapper(this)),
 	m_positionLabel(new QLabel(this)),
 	m_compiler(new Compiler("", this))
 {
@@ -80,6 +80,12 @@ MainWindow::MainWindow(QWidget *parent) :
 		m_startCellSpinBox->setValue(execCell);
 		setStartCell(execCell);
 
+		if(m_virtualMachine->breakpoints().contains(execCell)) {
+			m_ui->startAction->setEnabled(true);
+			m_tickTimer.stop();
+			return;
+		}
+
 		if(!isRunning) {
 			m_tickTimer.stop();
 			m_ui->stopAction->setEnabled(false);
@@ -90,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_virtualMachine, &VirtualMachine::registersChanged, this, &MainWindow::updateRegisters);
 	connect(m_virtualMachine, &VirtualMachine::labelsChanged, this, &MainWindow::updateLabels);
 	connect(m_virtualMachine, &VirtualMachine::memoryChanged, m_ui->memoryView, &MemoryView::setMemory);
-	connect(m_virtualMachine, &VirtualMachine::memoryChanged, [=](const QVector<int> &memory)
+	connect(m_virtualMachine, &VirtualMachine::memoryChanged, [&](const QVector<int> &memory)
 	{
 		m_startCellSpinBox->setMaximum(memory.size() - 1);
 	});
@@ -99,15 +105,31 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(m_startCellSpinBox, valueChanged, this, &MainWindow::setStartCell);
 	connect(m_startCellSpinBox, valueChanged, m_virtualMachine, &VirtualMachine::setExecCell);
 
+	m_ui->codeEdit->setMarkPixmap(CodeEdit::Cell, QPixmap(":/icons/play_blue.png"));
+	m_ui->codeEdit->setMarkPixmap(CodeEdit::Breakpoint, QPixmap(":/icons/stop.png"));
+
 	connect(m_ui->codeEdit->document(), &QTextDocument::contentsChanged, this, &MainWindow::documentWasModified);
 	connect(m_ui->codeEdit, &CodeEdit::copyAvailable, this, &MainWindow::updateActions);
 	connect(m_ui->codeEdit, &CodeEdit::copyAvailable, this, &MainWindow::updateActions);
 	connect(m_ui->codeEdit, &CodeEdit::undoAvailable, this, &MainWindow::updateActions);
 	connect(m_ui->codeEdit, &CodeEdit::redoAvailable, this, &MainWindow::updateActions);
 	connect(m_ui->codeEdit, &CodeEdit::cursorPositionChanged, this, &MainWindow::updateCursorPosition);
-	connect(m_ui->codeEdit, &CodeEdit::gutterClicked, this, &MainWindow::setStartLine);
+	connect(m_ui->codeEdit, &CodeEdit::gutterClicked, [&](const int &line, const CodeEdit::GutterMark &mark)
+	{
+		if(mark == CodeEdit::Cell) {
+			setStartLine(line);
+		} else {
+			const int cell = m_compiler->lineToCell(line);
+			const bool added = m_virtualMachine->toggleBreakpoint(cell);
+			if(added) {
+				m_ui->codeEdit->addMark(line, mark);
+			} else {
+				m_ui->codeEdit->removeMark(line, mark);
+			}
+		}
+	});
 	connect(m_ui->codeEdit, &CodeEdit::focusChanged, this, &MainWindow::updateActions);
-	connect(m_ui->codeEdit, &CodeEdit::fileDropped, [=](const QString &fileName)
+	connect(m_ui->codeEdit, &CodeEdit::fileDropped, [&](const QString &fileName)
 	{
 		if(!maybeSave())
 			return;
@@ -212,21 +234,24 @@ bool MainWindow::assemble()
 
 void MainWindow::startExec()
 {
-	m_ui->codeEdit->setReadOnly(true);
-	m_asmHighlighter->setEnabled(false);
-	m_startCellSpinBox->setEnabled(false);
-	m_ui->startAction->setEnabled(false);
-	m_ui->singleStepAction->setEnabled(false);
-	m_ui->memorySizeAction->setEnabled(false);
-	m_ui->stopAction->setEnabled(true);
-	updateActions();
+	//if readOnly then in breakpoint
+	if(!m_ui->codeEdit->isReadOnly()) {
+		m_ui->codeEdit->setReadOnly(true);
+		m_asmHighlighter->setEnabled(false);
+		m_startCellSpinBox->setEnabled(false);
+		m_ui->startAction->setEnabled(false);
+		m_ui->singleStepAction->setEnabled(false);
+		m_ui->memorySizeAction->setEnabled(false);
+		m_ui->stopAction->setEnabled(true);
+		updateActions();
 
-	m_prevMemory = m_virtualMachine->memory();
-	m_prevRegisters = m_virtualMachine->registers();
-	m_prevStartCell = m_startCellSpinBox->value();
+		m_prevMemory = m_virtualMachine->memory();
+		m_prevRegisters = m_virtualMachine->registers();
+		m_prevStartCell = m_startCellSpinBox->value();
 
-	if(!assemble())
-		return;
+		if(!assemble())
+			return;
+	}
 
 	m_tickTimer.start(0);
 }
@@ -264,6 +289,8 @@ void MainWindow::singleExec()
 void MainWindow::stopExec()
 {
 	m_virtualMachine->setExecCell(-1);
+	m_ui->startAction->setEnabled(false);
+	m_tickTimer.start(0);
 }
 
 void MainWindow::rewindExec()
@@ -298,6 +325,11 @@ void MainWindow::documentWasModified()
 	if(m_compiler->code() != m_ui->codeEdit->toPlainText()) {
 		m_compiler->setCode(m_ui->codeEdit->toPlainText());
 		m_compiler->compile();
+	}
+
+	m_ui->codeEdit->removeMarks(CodeEdit::Breakpoint);
+	foreach(const int &cellNo, m_virtualMachine->breakpoints()) {
+		m_ui->codeEdit->addMark(m_compiler->cellToLine(cellNo), CodeEdit::Breakpoint);
 	}
 
 	setWindowModified(m_ui->codeEdit->document()->isModified());
@@ -389,17 +421,18 @@ void MainWindow::setStartLine(const int &lineNo)
 {
 	const int cellNo = m_compiler->lineToCell(lineNo);
 
+
 	m_startCellSpinBox->setValue(cellNo);
-	m_ui->codeEdit->setSpecialLine(lineNo);
+	m_ui->codeEdit->removeMarks(CodeEdit::Cell);
+	m_ui->codeEdit->addMark(lineNo, CodeEdit::Cell);
 }
 
 void MainWindow::setStartCell(const int &cellNo)
 {
-	m_ui->codeEdit->setSpecialLine(-1);
-
 	const int lineNo = m_compiler->cellToLine(cellNo);
 
-	m_ui->codeEdit->setSpecialLine(lineNo);
+	m_ui->codeEdit->removeMarks(CodeEdit::Cell);
+	m_ui->codeEdit->addMark(lineNo, CodeEdit::Cell);
 }
 
 void MainWindow::changeMemorySize()
@@ -486,6 +519,8 @@ void MainWindow::loadFile(const QString &fileName)
 	m_ui->codeEdit->setPlainText(in.readAll());
 	file.close();
 
+	m_ui->codeEdit->removeMarks(CodeEdit::Breakpoint);
+	m_virtualMachine->clearBreakpoints();
 	m_compiler->setCode(m_ui->codeEdit->toPlainText());
 	m_compiler->compile();
 	m_startCellSpinBox->setValue(m_compiler->startCell());

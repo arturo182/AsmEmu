@@ -1,6 +1,8 @@
 * - zmiany w programie, # - zmiany w języku
 
 1.2.1
+* Dodano obsługę breakpointów (dodawane przez kliknięcie rynny edytora)
+* Zmieniono ustawianie komórki startowej (Shift + klik na rynnę)
 # RET może przyjmować opcjonalną liczbę dodatkowych operacji POP jako argument
 
 1.2

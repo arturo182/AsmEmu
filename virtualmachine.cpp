@@ -321,6 +321,27 @@ bool VirtualMachine::exec()
 	return !theEnd;
 }
 
+const QList<int> &VirtualMachine::breakpoints() const
+{
+	return m_breakpoints;
+}
+
+void VirtualMachine::clearBreakpoints()
+{
+	m_breakpoints.clear();
+}
+
+bool VirtualMachine::toggleBreakpoint(const int &cell)
+{
+	if(m_breakpoints.contains(cell)) {
+		m_breakpoints.removeOne(cell);
+		return false;
+	} else {
+		m_breakpoints << cell;
+		return true;
+	}
+}
+
 const QVector<int> &VirtualMachine::memory() const
 {
 	return m_memory;

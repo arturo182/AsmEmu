@@ -81,6 +81,10 @@ class VirtualMachine : public QObject
 		bool assemble(const QString &code, QStringList *msgs = 0);
 		bool exec();
 
+		const QList<int> &breakpoints() const;
+		void clearBreakpoints();
+		bool toggleBreakpoint(const int &cell);
+
 		const QVector<int> &memory() const;
 		void setMemory(const QVector<int> &memory);
 
@@ -118,6 +122,7 @@ class VirtualMachine : public QObject
 
 	private:
 		QHash<QString, int> m_labels;
+		QList<int> m_breakpoints;
 		QVector<int> m_registers;
 		QVector<int> m_memory;
 		Screen *m_screen;

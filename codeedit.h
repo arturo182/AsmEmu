@@ -2,6 +2,8 @@
 #define CODEEDIT_H
 
 #include <QPlainTextEdit>
+#include <QHash>
+#include <QMap>
 
 class CodeEdit: public QPlainTextEdit
 {
@@ -9,8 +11,13 @@ class CodeEdit: public QPlainTextEdit
 	Q_PROPERTY(int lineStep READ lineStep WRITE setLineStep)
 	Q_PROPERTY(int zeroPadding READ zeroPadding WRITE setZeroPadding)
 	Q_PROPERTY(bool zeroStart READ zeroStart WRITE setZeroStart)
-	Q_PROPERTY(int specialLine READ specialLine WRITE setSpecialLine)
-	Q_PROPERTY(QPixmap specialPixmap READ specialPixmap WRITE setSpecialPixmap)
+
+	public:
+		enum GutterMark
+		{
+			Cell = 0,
+			Breakpoint
+		};
 
 	private:
 		class Gutter: public QWidget
@@ -42,17 +49,17 @@ class CodeEdit: public QPlainTextEdit
 		void setZeroStart(bool zeroStart);
 		bool zeroStart() const;
 
-		void setSpecialLine(const int &specialLine);
-		int specialLine() const;
+		void addMark(const int &line, const GutterMark &mark);
+		void removeMark(const int &line, const GutterMark &mark);
+		void removeMarks(const GutterMark &mark);
 
-		void setSpecialPixmap(const QPixmap &specialPixmap);
-		QPixmap specialPixmap() const;
+		void setMarkPixmap(const GutterMark &mark, const QPixmap &pixmap);
 
 		bool canRedo();
 		bool canUndo();
 
 	signals:
-		void gutterClicked(const int &line);
+		void gutterClicked(const int &line, const GutterMark &mark);
 		void fileDropped(const QString &fileName);
 		void focusChanged(bool focus);
 
@@ -77,8 +84,8 @@ class CodeEdit: public QPlainTextEdit
 		bool m_zeroStart;
 		bool m_undoAvailable;
 		bool m_redoAvailable;
-		QPixmap m_specialPixmap;
-		int m_specialLine;
+		QHash<GutterMark, QPixmap> m_markPixmaps;
+		QMultiMap<int, GutterMark> m_marks;
 };
 
 #endif // CODEEDIT_H

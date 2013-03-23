@@ -16,5 +16,6 @@
         <file>icons/arrow_refresh.png</file>
         <file>icons/application-lightning.png</file>
         <file>icons/cancel2.png</file>
+        <file>icons/stop.png</file>
     </qresource>
 </RCC>

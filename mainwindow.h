@@ -67,19 +67,24 @@ class MainWindow : public QMainWindow
 		
 	private:
 		Ui::MainWindow *m_ui;
-		QSignalMapper *m_mruMapper;
+
 		QHash<int, QTreeWidgetItem*> m_registerItems;
 		QHash<int, QTreeWidgetItem*> m_labelItems;
+
 		AsmHighlighter *m_asmHighlighter;
 		VirtualMachine *m_virtualMachine;
-		QTimer m_tickTimer;
-		Compiler *m_compiler;
+
+		QSpinBox *m_startCellSpinBox;
+		QSignalMapper *m_mruMapper;
+		QLabel *m_positionLabel;
+
 		QVector<int> m_prevRegisters;
 		QVector<int> m_prevMemory;
 		int m_prevStartCell;
-		QSpinBox *m_startCellSpinBox;
-		QLabel *m_positionLabel;
+
 		QString m_currentFile;
+		Compiler *m_compiler;
+		QTimer m_tickTimer;
 };
 
 #endif // MAINWINDOW_H

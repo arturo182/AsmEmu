@@ -2,6 +2,7 @@
 
 #include "asmhighlighter.h"
 
+#include <QApplication>
 #include <QTextBlock>
 #include <QMimeData>
 #include <QPainter>
@@ -32,8 +33,15 @@ void CodeEdit::Gutter::paintEvent(QPaintEvent *event)
 			number += m_textEdit->m_lineStep;
 
 		if(block.isVisible() && bottom >= event->rect().top()) {
-			if((m_textEdit->m_specialLine == number) && !m_textEdit->m_specialPixmap.isNull()) {
-				painter.drawPixmap(0, top, m_textEdit->m_specialPixmap);
+			QMapIterator<int, GutterMark> it(m_textEdit->m_marks);
+			it.toBack();
+			while(it.hasPrevious()) {
+				it.previous();
+
+				if(it.key() != number)
+					continue;
+
+				painter.drawPixmap(0, top, m_textEdit->m_markPixmaps[it.value()]);
 			}
 
 			const bool isCurrentLine = (m_textEdit->textCursor().block().blockNumber() == blockNumber);
@@ -59,13 +67,19 @@ void CodeEdit::Gutter::mousePressEvent(QMouseEvent *event)
 		return;
 
 	QTextBlock block = m_textEdit->firstVisibleBlock();
-	int line = qFloor(event->pos().y() / m_textEdit->fontMetrics().height()) + block.blockNumber();
+	int line = qRound(event->pos().y() / (double)m_textEdit->fontMetrics().height()) + block.blockNumber() - 1;
 	if(!m_textEdit->m_zeroStart)
 		line += 1;
 
-	emit m_textEdit->gutterClicked(line);
-}
+	if(line	> m_textEdit->blockCount())
+		return;
 
+	CodeEdit::GutterMark mark = CodeEdit::Breakpoint;
+	if(qApp->keyboardModifiers() & Qt::ShiftModifier)
+		mark = CodeEdit::Cell;
+
+	emit m_textEdit->gutterClicked(line, mark);
+}
 
 int CodeEdit::Gutter::prefferedWidth() const
 {
@@ -78,10 +92,10 @@ int CodeEdit::Gutter::prefferedWidth() const
 
 	digits = qMax(digits, m_textEdit->m_zeroPadding + 1);
 
-	const int marginLeft = 3;
+	const int marginLeft = 3 + 3 + 20;
 	const int marginRight = 3;
 
-	return marginLeft + (m_textEdit->fontMetrics().width('9') * digits) + marginRight + ((!m_textEdit->m_specialPixmap.isNull() && m_textEdit->m_specialLine > -1) ? m_textEdit->m_specialPixmap.width() : 0);
+	return marginLeft + (m_textEdit->fontMetrics().width('9') * digits) + marginRight;
 }
 
 
@@ -145,26 +159,36 @@ bool CodeEdit::zeroStart() const
 	return m_zeroStart;
 }
 
-void CodeEdit::setSpecialLine(const int &specialLine)
+void CodeEdit::addMark(const int &line, const CodeEdit::GutterMark &mark)
 {
-	m_specialLine = specialLine;
+	m_marks.insertMulti(line, mark);
 
 	m_gutter->update();
 }
 
-int CodeEdit::specialLine() const
+void CodeEdit::removeMark(const int &line, const CodeEdit::GutterMark &mark)
 {
-	return m_specialLine;
+	m_marks.remove(line, mark);
+
+	m_gutter->update();
 }
 
-void CodeEdit::setSpecialPixmap(const QPixmap &specialPixmap)
+void CodeEdit::removeMarks(const CodeEdit::GutterMark &mark)
 {
-	m_specialPixmap = specialPixmap;
+	QMutableMapIterator<int, GutterMark> it(m_marks);
+	while(it.hasNext()) {
+		it.next();
+
+		if(it.value() == mark)
+			it.remove();
+	}
+
+	m_gutter->update();
 }
 
-QPixmap CodeEdit::specialPixmap() const
+void CodeEdit::setMarkPixmap(const CodeEdit::GutterMark &mark, const QPixmap &pixmap)
 {
-	return m_specialPixmap;
+	m_markPixmaps.insert(mark, pixmap);
 }
 
 bool CodeEdit::canRedo()
