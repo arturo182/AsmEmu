@@ -4,53 +4,58 @@
 <context>
     <name>Compiler</name>
     <message>
-        <location filename="../compiler.cpp" line="174"/>
+        <location filename="../compiler.cpp" line="173"/>
         <source>%1:Unrecognised string escape \%2</source>
         <translation>%1:Nieznany znak specjalny \%2</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="187"/>
+        <location filename="../compiler.cpp" line="186"/>
         <source>%1:Invalid offset pointer, must be one literal/label and one register</source>
         <translation>%1:Błędny format wskaźnika przesuniętego, musi być jedna wartość/etykieta i jeden rejestr</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="285"/>
+        <location filename="../compiler.cpp" line="242"/>
+        <source>%1:Value out of range &quot;%2&quot;</source>
+        <translation>%1:Wartość poza zakresem &quot;%2&quot;</translation>
+    </message>
+    <message>
+        <location filename="../compiler.cpp" line="286"/>
         <source>%1:Illegal symbol in label &quot;%2&quot;</source>
         <translation>%1:Niedozwolony znak w etykiecie &quot;%2&quot;</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="313"/>
+        <location filename="../compiler.cpp" line="312"/>
         <source>%1:Invalid operand count for &quot;%2&quot; (expecting %3)</source>
         <translation>%1:Błędna liczba argumentów dla &quot;%2&quot; (oczekiwano %3)</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="344"/>
+        <location filename="../compiler.cpp" line="343"/>
         <source>%1:Undefined label &quot;%2&quot;</source>
         <translation>%1:Nieznana etykieta &quot;%2&quot;</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="388"/>
+        <location filename="../compiler.cpp" line="387"/>
         <source>%1:Invalid label name &quot;%2&quot;</source>
         <translation>%1: Niepoprawna nazwa etykiety &quot;%2&quot;</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="394"/>
+        <location filename="../compiler.cpp" line="393"/>
         <source>%1:Label already defined &quot;%2&quot;</source>
         <translation>%1:Etykieta już zdefiniowana &quot;%2&quot;</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="457"/>
+        <location filename="../compiler.cpp" line="456"/>
         <source>%1:Unterminated string</source>
         <translation>%1:Nie zamknięty ciąg znaków</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="462"/>
+        <location filename="../compiler.cpp" line="461"/>
         <source>%1:Unclosed pointer brackets</source>
         <translation>%1:Nie zamknięta klamerka wskaźnika</translation>
     </message>
     <message>
-        <location filename="../compiler.cpp" line="493"/>
-        <location filename="../compiler.cpp" line="505"/>
+        <location filename="../compiler.cpp" line="492"/>
+        <location filename="../compiler.cpp" line="504"/>
         <source>%1:Invalid mnemonic &quot;%2&quot;</source>
         <translation>%1:Nieznana instrukcja &quot;%2&quot;</translation>
     </message>
@@ -335,69 +340,69 @@
         <translation>&amp;Widok</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="158"/>
-        <location filename="../mainwindow.cpp" line="179"/>
+        <location filename="../mainwindow.cpp" line="180"/>
+        <location filename="../mainwindow.cpp" line="201"/>
         <source>Assembler files (*.asm)</source>
         <translation>Pliki assemblera (*.asm)</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="293"/>
-        <location filename="../mainwindow.cpp" line="535"/>
+        <location filename="../mainwindow.cpp" line="320"/>
+        <location filename="../mainwindow.cpp" line="573"/>
         <source>AsmEmu</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="293"/>
+        <location filename="../mainwindow.cpp" line="320"/>
         <source>Assembler Emulator v%1&lt;br&gt;Copyright &amp;copy; 2013 &lt;a href=&quot;mailto: arturo182@tlen.pl&quot;&gt;Artur Pacholec&lt;/a&gt;</source>
         <translation>Emulator Assemblera v%1&lt;br&gt;Copyright &amp;copy; 2013 &lt;a href=&quot;mailto: arturo182@tlen.pl&quot;&gt;Artur Pacholec&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="420"/>
+        <location filename="../mainwindow.cpp" line="456"/>
         <source>Choose language:</source>
         <translation>Wybierz język:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="420"/>
+        <location filename="../mainwindow.cpp" line="456"/>
         <source>Change language</source>
         <translation>Zmień język</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="426"/>
+        <location filename="../mainwindow.cpp" line="462"/>
         <source>Restart needed</source>
         <translation>Potrzebny restart</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="426"/>
+        <location filename="../mainwindow.cpp" line="462"/>
         <source>The language change will take effect after you restart the application.</source>
         <translation>Język zostanie aktywowany po restarcie programu.</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="464"/>
+        <location filename="../mainwindow.cpp" line="500"/>
         <source>Save changes?</source>
         <translation>Zapisać zmiany?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="464"/>
+        <location filename="../mainwindow.cpp" line="500"/>
         <source>Would you like to save changes?</source>
         <translation>Czy chcesz zapisać zmiany?</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="535"/>
+        <location filename="../mainwindow.cpp" line="573"/>
         <source>untitled.asm</source>
         <translation>bez nazwy.asm</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="355"/>
+        <location filename="../mainwindow.cpp" line="387"/>
         <source>Line %1 Col %2</source>
         <translation>Linia %1 Kol %2</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="405"/>
+        <location filename="../mainwindow.cpp" line="441"/>
         <source>Set memory size</source>
         <translation>Ustaw rozmiar pamięci</translation>
     </message>
     <message>
-        <location filename="../mainwindow.cpp" line="405"/>
+        <location filename="../mainwindow.cpp" line="441"/>
         <source>Memory size:</source>
         <translation>Rozmiar pamięci:</translation>
     </message>
@@ -405,7 +410,7 @@
 <context>
     <name>VirtualMachine</name>
     <message>
-        <location filename="../virtualmachine.cpp" line="391"/>
+        <location filename="../virtualmachine.cpp" line="418"/>
         <source>Unknown</source>
         <translation>Nieznany</translation>
     </message>
