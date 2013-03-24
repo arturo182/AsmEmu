@@ -77,14 +77,17 @@ class MainWindow : public QMainWindow
 		QSpinBox *m_startCellSpinBox;
 		QSignalMapper *m_mruMapper;
 		QLabel *m_positionLabel;
+		QLabel *m_speedLabel;
 
 		QVector<int> m_prevRegisters;
 		QVector<int> m_prevMemory;
 		int m_prevStartCell;
 
+		quint64 m_lastTickTime;
 		QString m_currentFile;
 		Compiler *m_compiler;
 		QTimer m_tickTimer;
+		int m_tickCount;
 };
 
 #endif // MAINWINDOW_H

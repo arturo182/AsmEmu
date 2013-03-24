@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QTextStream>
 #include <QSettings>
+#include <QDateTime>
 #include <QSpinBox>
 #include <QTimer>
 #include <QDebug>
@@ -51,7 +52,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_startCellSpinBox(new QSpinBox(this)),
 	m_mruMapper(new QSignalMapper(this)),
 	m_positionLabel(new QLabel(this)),
-	m_compiler(new Compiler("", this))
+	m_speedLabel(new QLabel(this)),
+	m_compiler(new Compiler("", this)),
+	m_tickCount(0)
 {
 	m_ui->setupUi(this);
 	m_ui->canvasDock->hide();
@@ -60,7 +63,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	m_ui->vmToolBar->addWidget(new QLabel(tr("Start cell: "), this));
 	m_ui->vmToolBar->addWidget(m_startCellSpinBox);
-	m_ui->statusBar->addPermanentWidget(m_positionLabel);
+	m_ui->statusBar->addPermanentWidget(m_positionLabel, 1);
+	m_ui->statusBar->addPermanentWidget(m_speedLabel, 10);
 
 	QAction *viewMenuAction = m_ui->menuBar->insertMenu(m_ui->helpMenu->menuAction(), createPopupMenu());
 	viewMenuAction->setText(tr("&View"));
@@ -84,6 +88,16 @@ MainWindow::MainWindow(QWidget *parent) :
 			m_ui->startAction->setEnabled(true);
 			m_tickTimer.stop();
 			return;
+		}
+
+		++m_tickCount;
+
+		if(QDateTime::currentDateTime().toMSecsSinceEpoch() - m_lastTickTime > 1000) {
+			m_lastTickTime += 1000;
+
+			m_speedLabel->setText(tr("%1 Hz").arg(m_tickCount));
+
+			m_tickCount = 0;
 		}
 
 		if(!isRunning) {
@@ -253,6 +267,7 @@ void MainWindow::startExec()
 			return;
 	}
 
+	m_lastTickTime = QDateTime::currentDateTime().toMSecsSinceEpoch();
 	m_tickTimer.start(0);
 }
 
@@ -291,6 +306,7 @@ void MainWindow::stopExec()
 	m_virtualMachine->setExecCell(-1);
 	m_ui->startAction->setEnabled(false);
 	m_tickTimer.start(0);
+	m_speedLabel->clear();
 }
 
 void MainWindow::rewindExec()
@@ -299,6 +315,7 @@ void MainWindow::rewindExec()
 	m_virtualMachine->setRegisters(m_prevRegisters);
 	m_startCellSpinBox->setValue(m_prevStartCell);
 	m_ui->canvas->reset();
+	m_speedLabel->clear();
 
 	m_ui->codeEdit->setReadOnly(false);
 	m_asmHighlighter->setEnabled(true);
