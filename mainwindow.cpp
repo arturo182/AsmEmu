@@ -334,7 +334,7 @@ void MainWindow::rewindExec()
 
 void MainWindow::about()
 {
-	QMessageBox::about(this, tr("AsmEmu"), tr("Assembler Emulator v%1<br>Copyright &copy; 2013 <a href=\"mailto: arturo182@tlen.pl\">Artur Pacholec</a>").arg(Constants::Version));
+	QMessageBox::about(this, tr("AsmEmu"), tr("Assembler Emulator v%1<br><br>Copyright &copy; 2013 Artur Pacholec &lt;<a href=\"mailto: arturo182@tlen.pl\">arturo182@tlen.pl</a>&gt;<br><a href=\"http://www.arturpacholec.pl/\">http://www.arturpacholec.pl/</a>").arg(Constants::Version));
 }
 
 void MainWindow::documentWasModified()
